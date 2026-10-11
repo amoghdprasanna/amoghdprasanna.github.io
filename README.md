@@ -1,6 +1,6 @@
 # amoghdprasanna.github.io
 
-My research site: https://amoghdprasanna.github.io
+Live site: https://amoghdprasanna.github.io
 
 Astro (static), MDX content collections, KaTeX, self-hosted variable fonts, no UI
 framework. The tweezer-array hero and the Bloch-sphere qubit are small canvas
