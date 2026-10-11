@@ -60,17 +60,5 @@ export default defineConfig({
         ],
       },
     },
-    {
-      // Hand-lettered print for the Feynman epigraph. A typeface, not his handwriting.
-      provider: fontProviders.local(),
-      name: 'Patrick Hand',
-      cssVariable: '--font-letter',
-      fallbacks: ['cursive'],
-      options: {
-        variants: [
-          { src: ['@fontsource/patrick-hand/files/patrick-hand-latin-400-normal.woff2'], weight: '400', style: 'normal' },
-        ],
-      },
-    },
   ],
 });

@@ -12,6 +12,7 @@ import Note from '../components/Note.astro';
 import Todo from '../components/Todo.astro';
 import { site } from '../site';
 import { education, coursework, schools, industry } from '../data/cv';
+import feynmanQuote from '../assets/feynman-quote.webp';
 
 const research = (await getCollection('research', (e) => !e.data.draft)).sort((a, b) => a.data.order - b.data.order);
 const statusRank = { preprint: 0, 'in preparation': 1, published: 2 } as const;
@@ -54,10 +55,11 @@ const jsonLd = {
     <Ink slot="aside" name="eq-bell" class="aside-ink no-print" label="Handwritten: psi equals one over root two times the sum of zero zero and one one, a Bell state." />
     <div class="prose interests">
       <figure class="epigraph">
+        <div class="script" aria-hidden="true" style={`--src: url(${feynmanQuote.src}); aspect-ratio: ${feynmanQuote.width} / ${feynmanQuote.height}`}></div>
         <blockquote>
           <p>Nature isn't classical, dammit, and if you want to make a simulation of nature, you'd better make it quantum mechanical.</p>
         </blockquote>
-        <figcaption class="mono-plain">Richard P. Feynman, <a href="https://doi.org/10.1007/BF02650179"><cite>Simulating Physics with Computers</cite></a> (1982). Hand-lettered type, not his manuscript.</figcaption>
+        <figcaption class="mono-plain">Richard P. Feynman, <a href="https://doi.org/10.1007/BF02650179"><cite>Simulating Physics with Computers</cite></a> (1982). Lettering generated with AI, not his handwriting.</figcaption>
       </figure>
       <p>
         I'm interested in <strong>quantum error correction</strong>, <strong>quantum simulation</strong> and <strong>quantum complexity</strong>: how to keep quantum information intact, what a quantum computer can simulate that a classical one can't, and how to prove where that line sits.
@@ -176,7 +178,12 @@ const jsonLd = {
   .interests { font-size: var(--step-1); line-height: 1.55; }
   .interests p + p { color: var(--mute); }
   .epigraph { margin: 0 0 var(--space-m); padding-left: 1.1rem; border-left: 2px solid var(--accent); }
-  .epigraph blockquote p { font-family: var(--font-letter), cursive; font-size: var(--step-2); line-height: 1.3; color: var(--fg); text-wrap: pretty; transform: rotate(-0.6deg); transform-origin: left; }
+  .epigraph .script { width: min(100%, 34rem); background: var(--fg); -webkit-mask: var(--src) no-repeat left / contain; mask: var(--src) no-repeat left / contain; }
+  .epigraph blockquote p { font-style: italic; font-size: var(--step-1); line-height: 1.45; color: var(--fg); }
+  @media screen {
+    .epigraph blockquote { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  }
+  @media print { .epigraph .script { display: none; } }
   .epigraph figcaption { margin-top: 0.6rem; font-size: var(--step--1); color: var(--mute); }
   .epigraph figcaption a { color: inherit; }
   :global(.aside-ink) { width: 100%; max-width: 11rem; margin-top: 1.5rem; }
