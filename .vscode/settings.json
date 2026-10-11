@@ -1,0 +1,5 @@
+{
+  // dist/ is build output, regenerated on every build. Edit src/ instead.
+  "files.exclude": { "dist": true, ".astro": true },
+  "search.exclude": { "dist": true, ".astro": true, "node_modules": true }
+}
