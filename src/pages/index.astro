@@ -1,0 +1,209 @@
+---
+import { getCollection, getEntry, render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Section from '../components/Section.astro';
+import ResearchEntry from '../components/ResearchEntry.astro';
+import Publication from '../components/Publication.astro';
+import QubitLab from '../components/QubitLab.astro';
+import Beyond from '../components/Beyond.astro';
+import Ink from '../components/Ink.astro';
+import Note from '../components/Note.astro';
+import Todo from '../components/Todo.astro';
+import { site } from '../site';
+import { education, coursework, schools, industry } from '../data/cv';
+
+const research = (await getCollection('research', (e) => !e.data.draft)).sort((a, b) => a.data.order - b.data.order);
+const statusRank = { preprint: 0, 'in preparation': 1, published: 2 } as const;
+const pubs = (await getCollection('publications', (e) => !e.data.draft)).sort(
+  (a, b) => statusRank[a.data.status] - statusRank[b.data.status] || a.data.order - b.data.order,
+);
+const hasPreprint = pubs.some((p) => p.data.status === 'preprint');
+const software = (await getCollection('software')).sort((a, b) => a.data.order - b.data.order);
+const current = software.filter((s) => !s.data.earlier);
+const earlier = software.filter((s) => s.data.earlier);
+const readings = (await getCollection('readings', (e) => e.data.teaser)).sort((a, b) => a.data.order - b.data.order);
+const now = await getEntry('now', 'now');
+const { Content: Now } = await render(now!);
+const updated = now!.data.updated.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+const l = site.links;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: site.name,
+  alternateName: site.fullName,
+  url: Astro.site?.href,
+  email: `mailto:${site.email}`,
+  jobTitle: site.role,
+  description: site.description,
+  affiliation: { '@type': 'CollegeOrUniversity', name: 'University of Maryland, College Park', url: 'https://umd.edu' },
+  alumniOf: [
+    { '@type': 'CollegeOrUniversity', name: 'University of Maryland, College Park' },
+    { '@type': 'CollegeOrUniversity', name: education[1].school },
+  ],
+  knowsAbout: ['Quantum error correction', 'Quantum machine learning', 'Quantum compilation', 'Qudits', 'Circuit QED'],
+  sameAs: [l.github, l.linkedin, l.scholar, l.orcid].filter(Boolean),
+};
+---
+
+<Base jsonLd={jsonLd}>
+  <Hero />
+
+  <Section id="interests" num="01" title="Research interests">
+    <Ink slot="aside" name="eq-bell" class="aside-ink no-print" label="Handwritten: psi equals one over root two times the sum of zero zero and one one, a Bell state." />
+    <div class="prose interests">
+      <p>
+        I work on <strong>quantum error correction</strong> (bosonic and GKP codes, LCA codes, decoding topological codes), on <strong>quantum machine learning that survives real hardware noise</strong>, and on <strong>compiling for qudits</strong> on superconducting cavities and transmons.
+      </p>
+      <p>
+        The through-line is the gap between the circuit we write and what the hardware actually does. On a noisy device the budget is two-qubit gates, not depth; on a qudit, leakage and anharmonicity belong in the objective, not in a footnote.
+      </p>
+    </div>
+  </Section>
+
+  <Section id="research" num="02" title="Research">
+    {research.map((entry) => <ResearchEntry entry={entry} />)}
+  </Section>
+
+  <Section id="publications" num="03" title="Publications">
+    {!hasPreprint && <Todo>arXiv preprints go here first: add a file to src/content/publications with status: preprint and arxiv: 2601.01234.</Todo>}
+    {pubs.map((entry) => <Publication entry={entry} />)}
+  </Section>
+
+  <Section id="software" num="04" title="Software" class="software">
+    <div class="cards">
+      {current.map((s) => (
+        <article class="card reveal">
+          <p class="mono">{s.data.context ?? s.data.stack.join(' · ')}</p>
+          <h3><a href={s.data.url}>{s.data.question}</a></h3>
+          <p class="summary">{s.data.summary}</p>
+          <p class="name mono-plain"><a href={s.data.url}>{s.data.name}</a>{s.data.context && ` · ${s.data.stack.join(', ')}`}</p>
+        </article>
+      ))}
+    </div>
+    <details class="earlier">
+      <summary class="mono">Earlier engineering work</summary>
+      {earlier.map((s) => (
+        <article class="card flat">
+          <h3><a href={s.data.url}>{s.data.question}</a></h3>
+          <p class="summary">{s.data.summary}</p>
+          <p class="name mono-plain"><a href={s.data.url}>{s.data.name}</a> · {[s.data.context, s.data.stack.join(', ')].filter(Boolean).join(' · ')}</p>
+        </article>
+      ))}
+    </details>
+  </Section>
+
+  <Section id="education" num="05" title="Education and training" class="coursework">
+    <ul class="rows" role="list">
+      {education.map((e) => (
+        <li>
+          <span class="when mono-plain">{e.dates}</span>
+          <span><strong>{e.school}</strong>, {e.place}<br /><span class="dim">{e.degree}. {e.detail}.</span></span>
+        </li>
+      ))}
+    </ul>
+    <h3 class="sub mono">Graduate coursework, UMD</h3>
+    <ul class="rows" role="list">
+      {coursework.map((c) => (
+        <li>
+          <span class="when mono-plain">{c.code}</span>
+          <span>{c.title} <span class="dim">({c.who}{c.note && `, ${c.note}`})</span></span>
+        </li>
+      ))}
+    </ul>
+    <h3 class="sub mono">Schools</h3>
+    <ul class="rows" role="list">
+      {schools.map((s) => (
+        <li><span class="when mono-plain">{s.year}</span><span>{s.title}</span></li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section id="before" num="06" title="Before research" class="before">
+    <div class="prose">
+      <p>
+        Before graduate school I spent two and a half years shipping production code, which is why my research code is tested and reproducible.
+      </p>
+    </div>
+    <ul class="rows" role="list">
+      {industry.map((j) => (
+        <li>
+          <span class="when mono-plain">{j.dates}</span>
+          <span><strong>{j.org}</strong>, {j.place}<br /><span class="dim">{j.role}. {j.points.join(' ')}</span></span>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section id="readings" num="07" title="Readings" class="readings-teaser">
+    <ul class="shelf" role="list">
+      {readings.map((r, i) => (
+        <li class="book">
+          <span class="when mono-plain">{r.data.year}</span>
+          <span>
+            <a href={r.data.url}><strong>{r.data.title}</strong></a> <i class="dim">{r.data.author}</i>
+            <span class="take">{r.data.takeaway}</span>
+          </span>
+          {i === 0 && r.data.note && <Note class="margin">{r.data.note}</Note>}
+        </li>
+      ))}
+    </ul>
+    <a class="more" href="/readings/">The whole shelf</a>
+  </Section>
+
+  <Section id="now" num="08" title="Now" class="now">
+    <p class="mono updated">Updated {updated}</p>
+    <div class="prose"><Now /></div>
+  </Section>
+
+  <Section id="qubit" num="09" title="A qubit to play with" class="no-print">
+    <QubitLab />
+  </Section>
+
+  <Section id="beyond" num="10" title="Off the clock" class="no-print">
+    <Beyond />
+  </Section>
+</Base>
+
+<style>
+  .interests { font-size: var(--step-1); line-height: 1.55; }
+  .interests p + p { color: var(--mute); }
+  :global(.aside-ink) { width: 100%; max-width: 11rem; margin-top: 1.5rem; }
+
+  .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-m); }
+  .card { border: 1px solid var(--line); border-radius: 6px; padding: var(--space-m); background: color-mix(in oklch, var(--bg-2) 60%, transparent); display: grid; gap: 0.6rem; align-content: start; }
+  .card h3 { font-size: var(--step-1); font-weight: 600; line-height: 1.25; }
+  .card h3 a { text-decoration: none; }
+  .card h3 a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
+  .card .summary { color: var(--mute); font-size: var(--step--1); line-height: 1.6; }
+  .card .name a { color: var(--fg); }
+  .card.flat { border: 0; background: none; padding: 1rem 0; border-bottom: 1px solid var(--line); border-radius: 0; }
+  .earlier { margin-top: var(--space-m); }
+  .earlier summary { cursor: pointer; padding-block: 0.6rem; width: max-content; }
+  .earlier summary:hover { color: var(--fg); }
+  .earlier[open] summary { color: var(--fg); }
+
+  .rows { list-style: none; padding: 0; }
+  .rows li { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 0.3rem 1.2rem; padding-block: 0.75rem; border-bottom: 1px solid var(--line); }
+  .rows strong { font-weight: 600; }
+  .when { padding-top: 0.2rem; white-space: nowrap; }
+  .dim { color: var(--mute); }
+  .sub { margin-top: var(--space-l); margin-bottom: 0.3rem; }
+
+  .shelf { list-style: none; padding: 0; }
+  .book { position: relative; display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: 1rem; padding-block: 1rem; border-bottom: 1px solid var(--line); }
+  .book a { text-decoration: none; }
+  .book a:hover strong { text-decoration: underline; text-decoration-color: var(--accent); }
+  .take { display: block; color: var(--mute); margin-top: 0.2rem; }
+  .book :global(.margin) { position: absolute; left: calc(-1 * var(--label-col) - var(--space-l) + 0.5rem); top: 3.2rem; transform: rotate(-3deg); }
+  .readings-teaser .more { margin-top: 1.2rem; }
+  .updated { margin-bottom: 0.8rem; }
+
+  @media (max-width: 52rem) {
+    .cards { grid-template-columns: minmax(0, 1fr); }
+    .rows li { grid-template-columns: minmax(0, 1fr); gap: 0.1rem; }
+    .book :global(.margin) { position: static; grid-column: 2; transform: rotate(-2deg); }
+    :global(.aside-ink) { max-width: 10rem; margin-top: 0.8rem; }
+  }
+</style>

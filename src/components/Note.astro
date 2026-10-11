@@ -1,0 +1,16 @@
+---
+// A handwritten margin note. Decorative, so screen readers skip it when the
+// same idea is already in the text; pass `speak` to keep it.
+interface Props { class?: string; style?: string; speak?: boolean; arrow?: 'left' | 'down' | 'none' }
+const { class: cls = '', style, speak = false, arrow = 'none' } = Astro.props;
+---
+<p class:list={['hand', 'note', cls]} style={style} aria-hidden={speak ? undefined : 'true'}>
+  {arrow === 'left' && (
+    <svg class="arrow" viewBox="0 0 60 30" width="46" height="23" aria-hidden="true"><path d="M56 6C42 4 22 10 6 24M6 24l2-9M6 24l9-1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+  )}
+  <slot />
+</p>
+<style>
+  .note { margin: 0; }
+  .arrow { display: inline-block; vertical-align: -0.4em; margin-right: 0.25rem; }
+</style>

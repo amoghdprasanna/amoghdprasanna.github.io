@@ -1,0 +1,55 @@
+---
+question: Can a quantum circuit learn how quarks become hadrons?
+summary: There is no first-principles calculation of hadronization, so event generators like Pythia fit a phenomenological Lund string model instead. I train quantum circuit Born machines on Pythia 8 momentum distributions and check what survives once IBM's noise model is switched on.
+order: 2
+year: "2026"
+place: UMD
+status: write-up in progress
+metric:
+  value: "32"
+  label: native ECR gates in the best circuit under FakeBrisbane noise
+tags: [Qiskit, JAX, Pythia 8, error mitigation]
+# TODO(confirm): add Jinghong (full name, affiliation) and anyone else, in the
+# order and form the write-up will use.
+collaborators: []
+note: gates, not depth, are the budget
+---
+
+import Figure from '../../components/Figure.astro';
+import Todo from '../../components/Todo.astro';
+
+## Motivation
+
+Hadronization, the step where quarks and gluons bind into the hadrons a detector actually sees, has no first-principles calculation. Event generators like Pythia fit a phenomenological Lund string model instead. A generative model that learns these distributions directly is a natural test case for quantum generative modeling, and a demanding one, because the answer has to hold up on noisy hardware.
+
+## Approach
+
+A quantum circuit Born machine is a parameterized circuit whose measurement statistics are the model:
+
+$$
+q_\theta(x) = \bigl\lvert \langle x \rvert\, U(\theta)\, \lvert 0 \rangle^{\otimes n} \bigr\rvert^2 .
+$$
+
+I train it so that $q_\theta$ matches momentum distributions $p$ from Pythia 8 simulations, scoring the fit with the Kullback-Leibler divergence
+
+$$
+D_{\mathrm{KL}}(p \,\Vert\, q_\theta) = \sum_x p(x) \log \frac{p(x)}{q_\theta(x)}
+$$
+
+and the Kolmogorov-Smirnov statistic. I wrote a 6-qubit model in JAX with just-in-time compiled variational optimization, and a hardware-efficient ansatz in Qiskit that stays within IBM Brisbane's deployment constraints. Both are tested under the FakeBrisbane noise model, with zero-noise extrapolation and dynamical decoupling to mitigate the damage. I also ran circuit-depth and entanglement ablations comparing trainable RXX gates with fixed CX gates.
+
+## Results
+
+- **KL divergence below 0.14** for the 6-qubit JAX model under FakeBrisbane noise, with zero-noise extrapolation and dynamical decoupling.
+- **Transverse-momentum KS score of about 0.075** with only **32 native two-qubit (ECR) gates** in the best Qiskit circuit under FakeBrisbane noise.
+- The ablations found configurations where trainable RXX gates scaled better than fixed CX gates.
+
+The lesson so far is that on noisy hardware the budget is two-qubit gates, not depth.
+
+<Figure caption="Learned versus Pythia 8 momentum distributions under FakeBrisbane noise. The figure goes here with the write-up." />
+
+<Todo section="What I'd do next">Write two or three concrete next steps in your own words.</Todo>
+
+## Links
+
+The code lives in a private group repository while the write-up is in progress.

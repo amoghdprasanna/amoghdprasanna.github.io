@@ -1,0 +1,59 @@
+---
+import { getCollection, render } from 'astro:content';
+import 'katex/dist/katex.min.css';
+import Base from '../../layouts/Base.astro';
+import Ink from '../../components/Ink.astro';
+
+export async function getStaticPaths() {
+  const all = (await getCollection('research', (e) => !e.data.draft)).sort((a, b) => a.data.order - b.data.order);
+  return all.map((entry, i) => ({ params: { slug: entry.id }, props: { entry, next: all[(i + 1) % all.length] } }));
+}
+
+const { entry, next } = Astro.props;
+const d = entry.data;
+const { Content } = await render(entry);
+---
+
+<Base title={d.question.replace(/[?.]$/, '')} description={d.summary}>
+  <article class="project wrap">
+    <p class="crumb mono"><a href="/#research">← Research</a></p>
+    <header>
+      <p class="mono">{d.year} · {d.place} · <span class="chip">{d.status}</span></p>
+      <h1 style={`view-transition-name: q-${entry.id}`}>{d.question}</h1>
+      <p class="lede">{d.summary}</p>
+      <dl class="facts mono-plain">
+        {d.collaborators.length > 0 && <div><dt>With</dt><dd>{d.collaborators.join('; ')}</dd></div>}
+        {d.metric && <div><dt>Result</dt><dd><b>{d.metric.value}</b> {d.metric.label}</dd></div>}
+        {d.tags.length > 0 && <div><dt>Tools</dt><dd>{d.tags.join(', ')}</dd></div>}
+        {d.links.length > 0 && <div><dt>Links</dt><dd>{d.links.map((x, i) => <>{i > 0 && ', '}<a href={x.url}>{x.label}</a></>)}</dd></div>}
+      </dl>
+      {d.ink && <Ink name={d.ink} class="head-ink" label={`Handwritten, ${d.inkLabel ?? 'from my notes'}`} />}
+    </header>
+    <div class="prose body">
+      <Content />
+    </div>
+    <nav class="next" aria-label="Next project">
+      <span class="mono">Next question</span>
+      <a href={`/research/${next.id}/`}>{next.data.question}</a>
+    </nav>
+  </article>
+</Base>
+
+<style>
+  .project { padding-block: var(--space-l) var(--space-xl); }
+  .crumb a { text-decoration: none; }
+  .crumb a:hover { color: var(--fg); }
+  header { max-width: 50rem; margin-top: var(--space-l); position: relative; }
+  h1 { font-size: var(--step-3); line-height: 1.12; font-weight: 500; letter-spacing: -0.02em; margin-top: 0.8rem; text-wrap: balance; }
+  .lede { font-size: var(--step-1); color: var(--mute); margin-top: 1.2rem; max-width: var(--measure); line-height: 1.5; }
+  .facts { margin-top: 1.6rem; display: grid; gap: 0.4rem; }
+  .facts div { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 1rem; }
+  .facts dt { text-transform: uppercase; letter-spacing: 0.06em; font-size: var(--step--2); padding-top: 0.15rem; }
+  .facts dd { color: var(--fg); }
+  .facts b { color: var(--accent); font-weight: 500; }
+  :global(.head-ink) { max-width: 16rem; margin-top: var(--space-m); }
+  .body { margin-top: var(--space-l); padding-top: var(--space-m); border-top: 1px solid var(--line); }
+  .next { margin-top: var(--space-xl); border-top: 1px solid var(--line); padding-top: var(--space-m); display: grid; gap: 0.4rem; }
+  .next a { font-size: var(--step-2); text-decoration: none; font-weight: 500; }
+  .next a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
+</style>

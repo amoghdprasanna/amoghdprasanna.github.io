@@ -1,0 +1,15 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Not found">
+  <div class="wrap nf">
+    <p class="mono">404</p>
+    <h1>This page decohered.</h1>
+    <p>Nothing was measured at this address. <a href="/">Back to the homepage</a>.</p>
+  </div>
+</Base>
+<style>
+  .nf { padding-block: var(--space-xl); min-height: 50vh; }
+  h1 { font-size: var(--step-4); font-weight: 340; margin-block: 0.6rem 1rem; }
+  p:last-child { color: var(--mute); }
+</style>

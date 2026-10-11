@@ -1,0 +1,56 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Note from '../components/Note.astro';
+
+const all = (await getCollection('readings')).sort((a, b) => a.data.order - b.data.order);
+const shelves = ['Ongoing', 'On doing research', 'Mindset'] as const;
+---
+
+<Base title="Readings" description="Annotated readings: what I took from each, in a line.">
+  <div class="wrap page">
+    <p class="crumb mono"><a href="/">← Home</a></p>
+    <h1>Readings</h1>
+    <p class="lede">An annotated shelf. Each entry is one line on what I took from it.</p>
+    {shelves.map((s) => (
+      <section aria-labelledby={`s-${s}`}>
+        <h2 id={`s-${s}`} class="mono">{s}</h2>
+        <ul role="list">
+          {all.filter((r) => r.data.shelf === s).map((r) => (
+            <li class="book">
+              <span class="year mono-plain">{r.data.year}</span>
+              <div>
+                <p><a href={r.data.url}><strong>{r.data.title}</strong></a>, <span class="author">{r.data.author}</span></p>
+                {r.data.venue && <p class="venue mono-plain">{r.data.venue}</p>}
+                <p class="take">{r.data.takeaway}</p>
+              </div>
+              {r.data.note && <Note class="margin">{r.data.note}</Note>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+</Base>
+
+<style>
+  .page { padding-block: var(--space-l) var(--space-xl); max-width: 58rem; }
+  .crumb a { text-decoration: none; }
+  h1 { font-size: var(--step-4); font-weight: 340; letter-spacing: -0.025em; margin-top: var(--space-m); }
+  .lede { color: var(--mute); font-size: var(--step-1); margin-top: 0.6rem; }
+  section { margin-top: var(--space-l); }
+  h2 { border-bottom: 1px solid var(--line); padding-bottom: 0.6rem; }
+  ul { list-style: none; padding: 0; }
+  .book { position: relative; display: grid; grid-template-columns: 5rem minmax(0, 1fr) 11rem; gap: 1rem; padding-block: 1.2rem; border-bottom: 1px solid var(--line); }
+  .book a { text-decoration: none; }
+  .book a:hover strong { text-decoration: underline; text-decoration-color: var(--accent); }
+  .year { padding-top: 0.25rem; }
+  .author { color: var(--mute); font-style: italic; }
+  .venue { margin-top: 0.2rem; font-size: var(--step--2); }
+  .take { margin-top: 0.5rem; max-width: 60ch; }
+  .book :global(.margin) { transform: rotate(-3deg); align-self: center; }
+  @media (max-width: 40rem) {
+    .book { grid-template-columns: minmax(0, 1fr); gap: 0.3rem; }
+    .book :global(.margin) { transform: rotate(-1.5deg); }
+  }
+</style>

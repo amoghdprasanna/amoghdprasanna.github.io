@@ -1,0 +1,86 @@
+---
+import type { CollectionEntry } from 'astro:content';
+interface Props { entry: CollectionEntry<'publications'> }
+const { entry } = Astro.props;
+const d = entry.data;
+
+const bib = (() => {
+  if (d.status !== 'published' && d.status !== 'preprint') return null;
+  const authors = d.authors.map((a) => {
+    const parts = a.split(' ');
+    return `${parts.at(-1)}, ${parts.slice(0, -1).join(' ')}`;
+  });
+  const f: [string, string | number | undefined][] = [
+    ['title', `{${d.title}}`], ['author', authors.join(' and ')], ['journal', d.venue],
+    ['volume', d.volume], ['number', d.issue], ['pages', d.pages?.replace('–', '--')],
+    ['year', d.year], ['month', d.month?.toLowerCase()], ['doi', d.doi],
+    ['eprint', d.arxiv], ['archivePrefix', d.arxiv ? 'arXiv' : undefined], ['url', d.url],
+  ];
+  const body = f.filter(([, v]) => v !== undefined).map(([k, v]) => `  ${k} = {${v}}`).join(',\n');
+  return `@${d.arxiv && !d.venue ? 'misc' : 'article'}{${d.bibkey ?? entry.id},\n${body}\n}`;
+})();
+
+const me = (a: string) => /Prasanna/.test(a);
+const href = d.doi ? `https://doi.org/${d.doi}` : d.arxiv ? `https://arxiv.org/abs/${d.arxiv}` : d.url;
+---
+<article class="pub">
+  <div>
+    <p class="title">{href ? <a href={href}>{d.title}</a> : d.title}{d.status === 'in preparation' && ' (working title)'}.</p>
+    <p class="authors">{d.authors.map((a, i) => <Fragment>{i > 0 && ', '}{me(a) ? <strong>{a}</strong> : a}</Fragment>)}</p>
+    {d.venue && (
+      <p class="venue"><i>{d.venue}</i>{d.volume && ` ${d.volume}`}{d.issue && `(${d.issue})`}{d.pages && `, ${d.pages}`}{d.year && `, ${d.month ? d.month + ' ' : ''}${d.year}`}.{d.doi && <Fragment> <a class="doi mono-plain" href={`https://doi.org/${d.doi}`}>doi:{d.doi}</a></Fragment>}</p>
+    )}
+    {d.arxiv && <p class="venue"><a class="mono-plain" href={`https://arxiv.org/abs/${d.arxiv}`}>arXiv:{d.arxiv}</a></p>}
+  </div>
+  <div class="actions">
+    <span class="chip">{d.peerReviewed ? 'peer-reviewed' : d.status}</span>
+    {bib && (
+      <div class="bibtex">
+        <button class="btn" type="button" data-bib aria-describedby={`bib-${entry.id}`}>Copy BibTeX</button>
+        <span class="visually-hidden" role="status" aria-live="polite" data-bib-status></span>
+        <pre id={`bib-${entry.id}`} hidden>{bib}</pre>
+      </div>
+    )}
+  </div>
+</article>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-bib]').forEach((b) => {
+    b.addEventListener('click', async () => {
+      const pre = b.parentElement!.querySelector('pre')!;
+      const status = b.parentElement!.querySelector('[data-bib-status]')!;
+      try {
+        await navigator.clipboard.writeText(pre.textContent ?? '');
+        b.textContent = 'Copied'; status.textContent = 'BibTeX copied to clipboard';
+      } catch {
+        pre.hidden = false; b.textContent = 'Select below';
+      }
+      setTimeout(() => (b.textContent = 'Copy BibTeX'), 2000);
+    });
+  });
+</script>
+
+<style>
+  .pub {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.6rem var(--space-m);
+    padding-block: 1.2rem; border-bottom: 1px solid var(--line);
+  }
+  .title { font-weight: 600; text-wrap: pretty; }
+  .title a { text-decoration: none; }
+  .title a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
+  .authors, .venue { color: var(--mute); }
+  .authors strong { color: var(--fg); font-weight: 500; }
+  .doi { text-decoration: none; }
+  .actions { display: grid; gap: 0.6rem; justify-items: end; align-content: start; }
+  pre {
+    grid-column: 1 / -1; margin-top: 0.6rem; padding: 0.8rem; overflow-x: auto; max-width: 100%;
+    font: 400 var(--step--2) / 1.5 var(--mono); background: var(--bg-2); border: 1px solid var(--line); border-radius: 4px;
+    text-align: left; user-select: all;
+  }
+  .bibtex { display: grid; justify-items: end; max-width: min(36rem, 80vw); }
+  @media (max-width: 40rem) {
+    .pub { grid-template-columns: minmax(0, 1fr); }
+    .actions { justify-items: start; grid-auto-flow: column; justify-content: start; align-items: center; }
+    .bibtex { justify-items: start; }
+  }
+</style>

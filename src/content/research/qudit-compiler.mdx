@@ -1,0 +1,42 @@
+---
+question: Can a learned compiler beat analytic decompositions on a qudit?
+summary: With Dr. Tanay Roy at Fermilab's SQMS Center, I'm training models that compile arbitrary SU(d) unitaries into native gate sequences for superconducting transmon qudits, built on the universal Jaynes-Cummings interaction in cQED. Leakage and anharmonicity are part of the objective from the start, not patched on afterwards.
+order: 1
+year: "2026"
+place: Fermilab SQMS · UMD
+status: ongoing
+tags: [cQED, transmon qudits, unitary synthesis, machine learning]
+collaborators: [Dr. Tanay Roy (Fermilab SQMS), Prof. Shabnam Jabeen (UMD)]
+ink: eq-entangle
+inkLabel: "From my notes: building an entangling gate out of native ones"
+---
+
+import Figure from '../../components/Figure.astro';
+import Todo from '../../components/Todo.astro';
+
+## Motivation
+
+A qudit holds more than two levels, so one transmon can do the work of several qubits. The catch is compilation. A target unitary on $d$ levels has to become a sequence of operations the hardware actually offers, and the hardware has its own opinions: the levels are not evenly spaced, and population leaks into states outside the computational subspace. Analytic decompositions exist, but they are not written with those imperfections in mind.
+
+## Approach
+
+The native operations come from the Jaynes-Cummings interaction between a transmon and a cavity mode,
+
+$$
+H = \omega_c\, a^\dagger a + \sum_j \omega_j \lvert j\rangle\langle j\rvert + g\,\bigl(a^\dagger b + a\, b^\dagger\bigr),
+\qquad b = \sum_j \sqrt{j+1}\, \lvert j\rangle\langle j+1\rvert ,
+$$
+
+where the uneven spacing of the $\omega_j$ is the anharmonicity. Together with drives on the transmon, this interaction is universal for controlling the joint system. I train models to choose sequences of these native operations for a target $U \in \mathrm{SU}(d)$, and the training objective scores the whole sequence, including how much population leaves the computational subspace along the way. Every learned decomposition is benchmarked against analytic baselines on the same targets.
+
+## Results
+
+<Figure caption="Learned versus analytic decompositions on the same targets. The figure goes here once the comparison is complete." />
+
+This work is ongoing, so there are no headline numbers yet.
+
+<Todo section="What I'd do next">Write two or three concrete next steps in your own words.</Todo>
+
+## Links
+
+The code and results will be linked here when they are public.

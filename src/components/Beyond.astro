@@ -1,0 +1,128 @@
+---
+import { Image, getImage } from 'astro:assets';
+import Note from './Note.astro';
+import { site } from '../site';
+
+import cadillac from '../assets/beyond/cadillac-night.jpg';
+import sr71 from '../assets/beyond/sr71.jpg';
+import avenue from '../assets/beyond/avenue-golden-hour.jpg';
+import cat from '../assets/beyond/orange-cat.jpg';
+import earth from '../assets/beyond/cracked-earth.jpg';
+import flatbreads from '../assets/beyond/flatbreads.jpg';
+import fog from '../assets/beyond/fog-road.jpg';
+import rain from '../assets/beyond/rain-through-bars.jpg';
+import leaf from '../assets/beyond/leaf-droplets.jpg';
+import abstracts from '../assets/beyond/painting-abstracts.jpg';
+import lily from '../assets/beyond/painting-lily.jpg';
+
+const photos = [
+  { src: avenue, alt: 'A wide avenue at golden hour, the Washington Monument in the distance.' },
+  { src: rain, alt: 'A rainy street seen through window bars, someone walking under an umbrella.' },
+  { src: sr71, alt: 'An SR-71 Blackbird, nose on, in a museum hangar.' },
+  { src: cat, alt: 'An orange tabby cat sitting on a tree stump among leaves.' },
+  { src: earth, alt: 'A pebble resting on cracked, dried earth, in black and white.' },
+  { src: flatbreads, alt: 'Hands rolling out flatbreads on a wooden board.' },
+  { src: fog, alt: 'A dirt road disappearing into fog, one figure far down it.' },
+  { src: cadillac, alt: 'A vintage Cadillac sedan parked on a city street at night.' },
+  { src: leaf, alt: 'Close-up of a large green leaf beaded with water droplets.' },
+];
+const paintings = [
+  { src: lily, alt: 'My painting: a white line-drawn lily over textured blue and red brushwork.' },
+  { src: abstracts, alt: 'My painting: four small abstract panels in red, blue, yellow and green.' },
+];
+const full = async (src: ImageMetadata) => (await getImage({ src, width: 1400, format: 'webp' })).src;
+const photoFull = await Promise.all(photos.map((p) => full(p.src)));
+const paintFull = await Promise.all(paintings.map((p) => full(p.src)));
+---
+
+<div class="beyond">
+  <div class="intro prose">
+    <p>Outside the lab I paint, take photographs, and box.</p>
+  </div>
+
+  <h3 class="mono">Through the lens</h3>
+  <p class="sub">Capturing light and moments: the same physics that governs photons, frozen in a frame.</p>
+  <ul class="photos" role="list">
+    {photos.map((p, i) => (
+      <li>
+        <a href={photoFull[i]} data-lightbox aria-label={`Open larger: ${p.alt}`}>
+          <Image src={p.src} alt={p.alt} widths={[240, 360, 520]} sizes="(min-width: 64rem) 17rem, (min-width: 40rem) 30vw, 46vw" class="photo" />
+        </a>
+      </li>
+    ))}
+  </ul>
+  <p class="more-row"><a class="more" href={site.links.photos}>More on VSCO</a></p>
+
+  <div class="two">
+    <div>
+      <h3 class="mono">On canvas</h3>
+      <p class="sub">Creating art with the same curiosity that drives research: exploring form, color, and expression on canvas.</p>
+      <ul class="paintings" role="list">
+        {paintings.map((p, i) => (
+          <li>
+            <a href={paintFull[i]} data-lightbox aria-label={`Open larger: ${p.alt}`}>
+              <Image src={p.src} alt={p.alt} widths={[240, 400, 560]} sizes="(min-width: 64rem) 14rem, 40vw" class="photo" />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="boxing">
+      <h3 class="mono">In the ring</h3>
+      <p>Boxing, and not boxing, until someone opens the gym door.</p>
+      <Note>Schrödinger's cat, gloves on</Note>
+    </div>
+  </div>
+
+  <dialog class="lightbox" aria-label="Photo">
+    <form method="dialog"><button class="btn close" aria-label="Close">close</button></form>
+    <img alt="" />
+  </dialog>
+</div>
+
+<script>
+  const dlg = document.querySelector<HTMLDialogElement>('.lightbox');
+  if (dlg) {
+    const img = dlg.querySelector('img')!;
+    document.querySelectorAll<HTMLAnchorElement>('[data-lightbox]').forEach((a) => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const thumb = a.querySelector('img')!;
+        img.src = a.href; img.alt = thumb.alt;
+        dlg.showModal();
+      });
+    });
+    dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+  }
+</script>
+
+<style>
+  .intro { color: var(--mute); margin-bottom: var(--space-m); }
+  h3 { margin-bottom: 0.4rem; }
+  .sub { color: var(--mute); font-size: var(--step--1); margin-bottom: 0.9rem; max-width: 52ch; }
+  .photos {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem;
+    list-style: none; padding: 0;
+  }
+  .photos a, .paintings a { display: block; overflow: hidden; border-radius: 3px; background: var(--bg-2); }
+  .photos :global(.photo) { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; transition: transform 0.6s ease, filter 0.4s; filter: saturate(0.85); }
+  .photos a:hover :global(.photo), .photos a:focus-visible :global(.photo) { transform: scale(1.03); filter: none; }
+  .more-row { margin-top: 0.8rem; }
+  .two { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--space-l); margin-top: var(--space-l); }
+  .paintings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; list-style: none; padding: 0; }
+  .paintings :global(.photo) { width: 100%; aspect-ratio: 5 / 6; object-fit: cover; }
+  .boxing p:not(.note) { color: var(--mute); max-width: 32ch; }
+  .boxing :global(.note) { margin-top: 0.5rem; transform: rotate(-2deg); }
+  .lightbox {
+    border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 0.75rem;
+    max-width: min(92vw, 70rem); max-height: 92dvh; border-radius: 6px;
+  }
+  .lightbox::backdrop { background: oklch(0 0 0 / 0.8); backdrop-filter: blur(4px); }
+  .lightbox img { max-height: calc(92dvh - 4.5rem); width: auto; margin-inline: auto; }
+  .lightbox form { display: flex; justify-content: flex-end; margin-bottom: 0.5rem; }
+  @media (max-width: 40rem) {
+    .photos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .photos li:last-child { display: none; }
+    .two { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>

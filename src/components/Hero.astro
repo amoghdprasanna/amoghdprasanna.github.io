@@ -1,0 +1,99 @@
+---
+import { site } from '../site';
+import Ink from './Ink.astro';
+import Note from './Note.astro';
+
+const l = site.links;
+const links = [
+  { href: l.cv, label: 'CV (PDF)' },
+  l.scholar && { href: l.scholar, label: 'Google Scholar' },
+  l.orcid && { href: l.orcid, label: 'ORCID' },
+  { href: l.github, label: 'GitHub' },
+  { href: l.linkedin, label: 'LinkedIn' },
+  { href: `mailto:${site.email}`, label: site.email },
+].filter(Boolean) as { href: string; label: string }[];
+---
+
+<header class="hero wrap">
+  <div class="text">
+    <p class="name">Amogh D. Prasanna</p>
+    <h1>Teaching noisy quantum hardware to compute <em>correctly.</em></h1>
+    <p class="sub">
+      {site.role} at the <strong>{site.affiliation}</strong>, working with Prof. Shabnam Jabeen and, at Fermilab's SQMS Center, Dr. Tanay Roy. Graduating May 2027; applying to PhD programs for Fall 2027.
+    </p>
+    <ul class="links mono" aria-label="Links">
+      {links.map((x) => <li><a href={x.href}>{x.label}</a></li>)}
+    </ul>
+  </div>
+
+  <div class="side">
+    <figure class="tweezer" data-tweezer>
+      <canvas aria-hidden="true"></canvas>
+      <figcaption class="visually-hidden">
+        Animation of a tweezer array: atoms load into a grid of optical traps at random, are moved into a defect-free four by four block, and are entangled by a Rydberg laser pulse.
+      </figcaption>
+      <div class="phases mono">
+        <span aria-hidden="true" data-phase>01 load</span><span aria-hidden="true" data-phase>02 sort</span><span aria-hidden="true" data-phase>03 entangle</span>
+        <button class="replay" type="button" data-replay aria-label="Replay the tweezer array animation">replay</button>
+      </div>
+    </figure>
+
+    <div class="working">
+      <Ink name="eq-qudit" class="eq" label="Handwritten equation: U in SU of d, compiled into a product over k of e to the minus i H k t k." />
+      <Note class="n-eq" arrow="left" speak>what I'm working on: a qudit unitary, compiled into native pulses</Note>
+    </div>
+  </div>
+</header>
+
+<script>
+  import { mountTweezer } from '../scripts/tweezer';
+  document.querySelectorAll<HTMLElement>('[data-tweezer]').forEach(mountTweezer);
+</script>
+
+<style>
+  .hero {
+    display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+    gap: var(--space-l); align-items: center;
+    padding-block: clamp(2.5rem, 7vw, 6.5rem) var(--space-xl);
+  }
+  .name { font-size: var(--step-1); font-weight: 500; margin-bottom: 1.1rem; }
+  h1 {
+    font-size: var(--step-4); line-height: 1.03; font-weight: 340; letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+  h1 em { font-style: italic; color: var(--accent); font-weight: 360; }
+  .sub { max-width: 54ch; color: var(--mute); margin-top: 1.6rem; text-wrap: pretty; }
+  .sub strong { color: var(--fg); font-weight: 500; }
+  .links { display: flex; flex-wrap: wrap; gap: 0.55rem 1.3rem; list-style: none; padding: 0; margin-top: 1.9rem; }
+  .links a { color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--faint); padding-bottom: 2px; }
+  .links a:hover { border-color: var(--accent); }
+  .links li:last-child a { text-transform: none; letter-spacing: 0.02em; }
+
+  .side { position: relative; }
+  .tweezer { position: relative; margin: 0; }
+  canvas { width: 100%; aspect-ratio: 13 / 10; }
+  .phases { display: flex; gap: 1.2rem; align-items: center; padding-left: 9%; margin-top: -0.2rem; }
+  .phases span { transition: color 0.3s; }
+  .phases :global(.on) { color: var(--fg); }
+  .replay {
+    margin-left: auto; background: none; border: 0; color: var(--mute); cursor: pointer;
+    font: inherit; letter-spacing: inherit; text-transform: inherit; padding: 0.4rem 0;
+    border-bottom: 1px dashed var(--faint);
+  }
+  .replay:hover { color: var(--fg); }
+
+  .working { margin-top: var(--space-m); display: grid; gap: 0.3rem; justify-items: start; }
+  .working :global(.eq) { width: min(100%, 22rem); }
+  .working :global(.n-eq) { font-size: clamp(1.1rem, 1rem + 0.4vw, 1.3rem); max-width: 22rem; transform: rotate(-1.5deg); margin-left: 0.5rem; }
+
+  /* On a phone: name and statement first, then the array, then the details. */
+  @media (max-width: 52rem) {
+    .hero { grid-template-columns: minmax(0, 1fr); gap: 0; padding-top: 1.75rem; }
+    .text { display: contents; }
+    .name { order: 1; margin-bottom: 0.6rem; }
+    h1 { order: 2; }
+    .side { order: 3; max-width: 30rem; margin-top: 1.25rem; }
+    .sub { order: 4; }
+    .links { order: 5; }
+  }
+</style>

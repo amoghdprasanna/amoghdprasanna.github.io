@@ -1,0 +1,19 @@
+---
+// Visible only in `npm run dev`, so unresolved items are obvious while editing
+// and never reach the deployed site.
+interface Props { section?: string }
+const { section } = Astro.props;
+const dev = import.meta.env.DEV;
+---
+{dev && (
+  <Fragment>
+    {section && <h2>{section}</h2>}
+    <p class="todo"><strong>TODO</strong> <slot /></p>
+  </Fragment>
+)}
+<style>
+  .todo {
+    font: 500 var(--step--1) / 1.5 var(--mono); color: oklch(0.8 0.15 80);
+    border: 1px dashed oklch(0.8 0.15 80); padding: 0.6rem 0.8rem; border-radius: 4px;
+  }
+</style>

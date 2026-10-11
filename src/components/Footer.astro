@@ -1,0 +1,39 @@
+---
+import { site } from '../site';
+const l = site.links;
+const links = [
+  { href: `mailto:${site.email}`, label: site.email },
+  { href: l.cv, label: 'CV' },
+  { href: l.github, label: 'GitHub' },
+  { href: l.linkedin, label: 'LinkedIn' },
+  l.scholar && { href: l.scholar, label: 'Scholar' },
+].filter(Boolean) as { href: string; label: string }[];
+---
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p class="close">
+      If you work on fault tolerance, bosonic codes, or learning-based compilation, I'd like to hear what you think is the important open problem.
+    </p>
+    <ul class="links mono">
+      {links.map((x) => <li><a href={x.href}>{x.label}</a></li>)}
+    </ul>
+    <div class="colophon mono">
+      <p>Built with Astro. Set in Newsreader and JetBrains Mono, notes in Caveat, equations in my own handwriting. The tweezer array and the qubit are drawn in code.</p>
+      <p><a href={l.qubitGate('H')} class="egg" title="Apply a Hadamard to the shared qubit on my GitHub profile">|ψ⟩ → H|ψ⟩</a></p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer { border-top: 1px solid var(--line); padding-block: var(--space-xl) 2.5rem; }
+  .close { font-size: var(--step-2); font-weight: 340; line-height: 1.35; max-width: 34ch; letter-spacing: -0.01em; text-wrap: balance; }
+  .links { display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem; list-style: none; padding: 0; margin-top: 1.8rem; }
+  .links a { color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--faint); padding-bottom: 2px; }
+  .links li:first-child a { text-transform: none; letter-spacing: 0.02em; }
+  .links a:hover { border-color: var(--accent); }
+  .colophon { margin-top: var(--space-xl); display: flex; justify-content: space-between; gap: 1rem 2rem; flex-wrap: wrap; text-transform: none; letter-spacing: 0.02em; }
+  .colophon p:first-child { max-width: 60ch; }
+  .egg { text-decoration: none; color: var(--mute); }
+  .egg:hover { color: var(--accent); }
+</style>

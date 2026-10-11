@@ -1,0 +1,80 @@
+---
+const items = [
+  { href: '/#research', label: 'Research' },
+  { href: '/#publications', label: 'Publications' },
+  { href: '/#software', label: 'Software' },
+  { href: '/readings/', label: 'Readings' },
+  { href: '/cv/', label: 'CV' },
+];
+const path = Astro.url.pathname;
+---
+
+<header class="site-header">
+  <nav class="site wrap" aria-label="Primary">
+    <a class="me mono" href="/" aria-label="Amogh D. Prasanna, home"><i aria-hidden="true"></i>A. D. Prasanna</a>
+    <ul class="links mono">
+      {items.map((i) => (
+        <li><a href={i.href} aria-current={path === i.href ? 'page' : undefined}>{i.label}</a></li>
+      ))}
+    </ul>
+    <button class="theme mono" type="button" aria-label="Switch to light theme" data-theme-toggle>
+      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg>
+      <span data-theme-label>dark</span>
+    </button>
+  </nav>
+</header>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]')!;
+  const label = btn.querySelector('[data-theme-label]')!;
+  const root = document.documentElement;
+  const mq = matchMedia('(prefers-color-scheme: light)');
+  const current = () => (root.dataset.theme as 'light' | 'dark' | undefined) ?? (mq.matches ? 'light' : 'dark');
+  const sync = () => {
+    const t = current();
+    label.textContent = t;
+    btn.setAttribute('aria-label', `Switch to ${t === 'dark' ? 'light' : 'dark'} theme`);
+  };
+  btn.addEventListener('click', () => {
+    const next = current() === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = next;
+    try { localStorage.setItem('theme', next); } catch {}
+    sync();
+    document.dispatchEvent(new CustomEvent('themechange'));
+  });
+  mq.addEventListener('change', () => { sync(); document.dispatchEvent(new CustomEvent('themechange')); });
+  sync();
+</script>
+
+<style>
+  .site-header {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in oklch, var(--bg) 84%, transparent);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav {
+    display: flex; align-items: center; gap: 1.5rem; min-height: 3.5rem;
+  }
+  .me { display: inline-flex; align-items: center; gap: 0.6rem; color: var(--fg); text-decoration: none; white-space: nowrap; margin-right: auto; }
+  .me i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .links { display: flex; gap: clamp(0.9rem, 2vw, 1.6rem); list-style: none; padding: 0; }
+  .links a { text-decoration: none; padding-block: 0.6rem; }
+  .links a:hover, .links a[aria-current='page'] { color: var(--fg); }
+  .theme {
+    display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;
+    background: none; border: 1px solid var(--line); border-radius: 99px;
+    padding: 0.35rem 0.7rem; min-height: 2rem;
+  }
+  .theme:hover { color: var(--fg); border-color: var(--faint); }
+
+  @media (max-width: 40rem) {
+    nav { flex-wrap: wrap; gap: 0 1rem; padding-block: 0.3rem; }
+    .links {
+      order: 3; width: 100%; overflow-x: auto; scrollbar-width: none;
+      gap: 1.1rem; border-top: 1px solid var(--line);
+    }
+    .links::-webkit-scrollbar { display: none; }
+    .theme span { display: none; }
+  }
+</style>
