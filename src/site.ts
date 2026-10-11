@@ -5,9 +5,9 @@ export const site = {
   name: 'Amogh D. Prasanna',
   fullName: 'Amogh Doddagadduvalli Prasanna',
   tagline: 'Teaching noisy quantum hardware to compute correctly.',
-  titleSuffix: 'Quantum error correction and QML',
+  titleSuffix: 'Quantum error correction, simulation and complexity',
   description:
-    'Graduate researcher at the University of Maryland working on quantum error correction, quantum machine learning under real hardware noise, and compiling for qudits.',
+    'Graduate researcher at the University of Maryland interested in quantum error correction, quantum simulation and quantum complexity, currently compiling for transmon qudits and decoding topological codes.',
   role: 'Graduate researcher',
   affiliation: 'University of Maryland, College Park',
   email: 'amoghdp@umd.edu',

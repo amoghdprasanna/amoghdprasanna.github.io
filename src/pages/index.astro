@@ -42,7 +42,7 @@ const jsonLd = {
     { '@type': 'CollegeOrUniversity', name: 'University of Maryland, College Park' },
     { '@type': 'CollegeOrUniversity', name: education[1].school },
   ],
-  knowsAbout: ['Quantum error correction', 'Quantum machine learning', 'Quantum compilation', 'Qudits', 'Circuit QED'],
+  knowsAbout: ['Quantum error correction', 'Quantum simulation', 'Quantum complexity theory', 'Quantum compilation', 'Qudits', 'Circuit QED'],
   sameAs: [l.github, l.linkedin, l.scholar, l.orcid].filter(Boolean),
 };
 ---
@@ -53,11 +53,17 @@ const jsonLd = {
   <Section id="interests" num="01" title="Research interests">
     <Ink slot="aside" name="eq-bell" class="aside-ink no-print" label="Handwritten: psi equals one over root two times the sum of zero zero and one one, a Bell state." />
     <div class="prose interests">
+      <figure class="epigraph">
+        <blockquote>
+          <p>Nature isn't classical, dammit, and if you want to make a simulation of nature, you'd better make it quantum mechanical.</p>
+        </blockquote>
+        <figcaption class="mono-plain">Richard P. Feynman, <a href="https://doi.org/10.1007/BF02650179"><cite>Simulating Physics with Computers</cite></a> (1982)</figcaption>
+      </figure>
       <p>
-        I work on <strong>quantum error correction</strong> (bosonic and GKP codes, LCA codes, decoding topological codes), on <strong>quantum machine learning that survives real hardware noise</strong>, and on <strong>compiling for qudits</strong> on superconducting cavities and transmons.
+        I'm interested in <strong>quantum error correction</strong> (bosonic and GKP codes, LCA codes, decoding topological codes), <strong>quantum simulation</strong> and <strong>quantum complexity</strong>: how to keep quantum information intact, what a quantum computer can simulate that a classical one can't, and how to prove where that line sits.
       </p>
       <p>
-        The through-line is the gap between the circuit we write and what the hardware actually does. On a noisy device the budget is two-qubit gates, not depth; on a qudit, leakage and anharmonicity belong in the objective, not in a footnote.
+        So far I've met those questions on real hardware: compiling qudit unitaries into native gates on transmons, decoding topological codes, and training quantum generative models that have to survive IBM's noise. On a noisy device the budget is two-qubit gates, not depth; on a qudit, leakage and anharmonicity belong in the objective, not in a footnote.
       </p>
     </div>
   </Section>
@@ -169,6 +175,10 @@ const jsonLd = {
 <style>
   .interests { font-size: var(--step-1); line-height: 1.55; }
   .interests p + p { color: var(--mute); }
+  .epigraph { margin: 0 0 var(--space-m); padding-left: 1.1rem; border-left: 2px solid var(--accent); }
+  .epigraph blockquote p { font-style: italic; font-size: var(--step-1); line-height: 1.45; color: var(--fg); text-wrap: pretty; }
+  .epigraph figcaption { margin-top: 0.6rem; font-size: var(--step--1); color: var(--mute); }
+  .epigraph figcaption a { color: inherit; }
   :global(.aside-ink) { width: 100%; max-width: 11rem; margin-top: 1.5rem; }
 
   .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-m); }
