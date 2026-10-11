@@ -2,9 +2,7 @@
 
 Live site: https://amoghdprasanna.github.io
 
-Astro (static), MDX content collections, KaTeX, self-hosted variable fonts, no UI
-framework. The tweezer-array hero and the Bloch-sphere qubit are small canvas
-scripts in `src/scripts/`. Deployed to GitHub Pages by `.github/workflows/deploy.yml`.
+Astro (static), MDX content collections, KaTeX, self-hosted variable fonts.
 
 ```bash
 npm install
