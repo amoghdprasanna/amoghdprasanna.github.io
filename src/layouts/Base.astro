@@ -53,6 +53,7 @@ const og = new URL(ogImage, Astro.site).href;
     <Font cssVariable="--font-serif" preload={[{ style: 'normal' }]} />
     <Font cssVariable="--font-mono" preload />
     <Font cssVariable="--font-hand" />
+    <Font cssVariable="--font-letter" />
 
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
     <slot name="head" />
