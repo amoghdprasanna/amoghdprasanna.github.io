@@ -12,6 +12,7 @@ export const education = [
   {
     school: 'Visvesvaraya Technological University',
     place: 'India',
+    dates: 'Jun 2019 – July 2023',
     degree: 'Bachelors in Computer Science and Engineering',
   },
 ];
