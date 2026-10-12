@@ -13,6 +13,7 @@ import Todo from '../components/Todo.astro';
 import { site } from '../site';
 import { education, coursework, schools, industry } from '../data/cv';
 import feynmanQuote from '../assets/feynman-quote.webp';
+import feynmanSignature from '../assets/feynman-signature.svg?raw';
 
 const research = (await getCollection('research', (e) => !e.data.draft)).sort((a, b) => a.data.order - b.data.order);
 const statusRank = { preprint: 0, 'in preparation': 1, published: 2 } as const;
@@ -69,6 +70,7 @@ const jsonLd = {
         <blockquote>
           <p>Nature isn't classical, dammit, and if you want to make a simulation of nature, you'd better make it quantum mechanical.</p>
         </blockquote>
+        <span class="sig" aria-hidden="true" set:html={feynmanSignature} />
         <figcaption class="mono-plain">Richard P. Feynman, <a href="https://doi.org/10.1007/BF02650179"><cite>Simulating Physics with Computers</cite></a> (1982).</figcaption>
       </figure>
       <p>
@@ -189,6 +191,8 @@ const jsonLd = {
   .interests p + p { color: var(--mute); }
   .epigraph { margin: 0 0 var(--space-m); padding-left: 1.1rem; border-left: 2px solid var(--accent); }
   .epigraph .script { width: min(100%, 40rem); background: var(--fg); -webkit-mask: var(--src) no-repeat left / contain; mask: var(--src) no-repeat left / contain; }
+  .epigraph .sig { display: block; width: min(45%, 13rem); margin: -0.4rem 0 0 calc(min(100%, 40rem) - min(45%, 13rem)); color: var(--fg); opacity: 0.85; }
+  .epigraph .sig :global(svg) { display: block; width: 100%; height: auto; }
   .epigraph blockquote p { font-style: italic; font-size: var(--step-1); line-height: 1.45; color: var(--fg); }
   @media screen {
     .epigraph blockquote { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
