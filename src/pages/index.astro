@@ -119,7 +119,7 @@ const jsonLd = {
       {education.map((e) => (
         <li>
           <span class="when mono-plain">{e.dates}</span>
-          <span><strong>{e.school}</strong>, {e.place}<br /><span class="dim">{[e.degree, e.detail].filter(Boolean).join('. ')}.</span></span>
+          <span><strong>{e.school}</strong>, <em class="place">{e.place}</em><br /><span class="dim">{[e.degree, e.detail].filter(Boolean).join('. ')}.</span></span>
         </li>
       ))}
     </ul>
@@ -223,6 +223,7 @@ const jsonLd = {
   .rows strong { font-weight: 600; }
   .when { padding-top: 0.2rem; white-space: nowrap; }
   .dim { color: var(--mute); }
+  .place { font-style: italic; font-size: 0.9em; }
   .sub { margin-top: var(--space-l); margin-bottom: 0.3rem; }
 
   .shelf { list-style: none; padding: 0; }
