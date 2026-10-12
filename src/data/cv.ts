@@ -6,19 +6,13 @@ export const education = [
     school: 'University of Maryland, College Park',
     place: 'College Park, MD',
     dates: 'Aug 2025 – May 2027',
-    // TODO(confirm): wording differs between resumes ("M.Eng in Computer Science
-    // Equivalent" in Oct 2026, "M.Eng. Cybersecurity" in Oct 2025).
-    degree: 'M.Eng in Computer Science Equivalent',
+    degree: 'Masters in Computer Science Equivalent',
     detail: 'GPA 3.9/4.0',
   },
   {
-    // TODO(confirm): the Oct 2025 resume and the EJ-ENG paper say Malnad College
-    // of Engineering (affiliated with VTU).
     school: 'Visvesvaraya Technological University',
-    place: 'Hassan, India',
-    dates: 'Jun 2019 – Jul 2023',
-    degree: 'B.E. Computer Science and Engineering',
-    detail: 'GPA 3.4/4.0',
+    place: 'India',
+    degree: 'Bachelors in Computer Science and Engineering',
   },
 ];
 
@@ -30,7 +24,7 @@ export const research = [
     points: [
       'Machine learning for qudit unitary decomposition, advised by Dr. Tanay Roy (SQMS, Fermilab): compiling arbitrary SU(d) unitaries into high-fidelity sequences of native gates on superconducting transmon qudits, with leakage and anharmonicity in the training objective.',
       'Quantum generative modeling: a quantum circuit Born machine in JAX for hadron momentum distributions from Pythia 8, reaching KL divergence below 0.14 under FakeBrisbane noise with zero-noise extrapolation and dynamical decoupling.',
-      'A hardware-efficient Qiskit ansatz reaching a transverse-momentum KS score of about 0.075 with only 32 native ECR gates under FakeBrisbane noise.',
+      'A hardware-efficient ansatz reaching a transverse-momentum KS score of about 0.075 with only 32 native ECR gates under FakeBrisbane noise.',
       'Circuit-depth and entanglement ablations comparing trainable RXX and fixed CX gates.',
     ],
   },

@@ -1,13 +1,17 @@
 ---
-// One of my handwritten equations, lifted from my notes as vector strokes
-// (see tools/ink). Inlined so it takes the theme colour and draws itself in.
-interface Props { name: string; label: string; class?: string; draw?: boolean }
-const { name, label, class: cls = '', draw = true } = Astro.props;
+// One of my handwritten equations or notes, lifted from my notes as vector
+// strokes (see tools/ink). Inlined so it takes the theme colour and draws
+// itself in. `scale` sizes it in em per point of the original page, so ink
+// written at the same size renders at the same size.
+interface Props { name: string; label: string; class?: string; draw?: boolean; scale?: number }
+const { name, label, class: cls = '', draw = true, scale } = Astro.props;
 const files = import.meta.glob<string>('../assets/ink/*.svg', { query: '?raw', import: 'default', eager: true });
 const raw = files[`../assets/ink/${name}.svg`];
 if (!raw) throw new Error(`No ink named ${name}`);
 const svg = raw
   .replace('<svg ', `<svg role="img" aria-label="${label.replace(/"/g, '&quot;')}" `)
   .replaceAll('<path ', '<path pathLength="1" ');
+const width = Number(raw.match(/viewBox="[^"]*?\S+ \S+ (\S+) \S+"/)?.[1]);
+const style = scale && width ? `width: min(100%, ${(width * scale).toFixed(2)}em)` : undefined;
 ---
-<div class:list={['ink', { draw }, cls]} set:html={svg} />
+<span class:list={['ink', { draw }, cls]} style={style} set:html={svg} />

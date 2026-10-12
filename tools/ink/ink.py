@@ -4,20 +4,23 @@ Usage: python ink.py spec.json outdir
 spec: {"name": [[page, x0, y0, x1, y1, dx, dy, scale], ...], ...}
 Each piece copies the strokes whose bbox centre lies in the rect, shifts the
 rect origin to (dx, dy) and scales by `scale`. Output uses currentColor.
+Dark filled shapes (some pens export short marks, like the bar of a ⊆, as
+fills) are copied too and drawn filled.
 """
 import json, os, sys, pymupdf
 
 PDF = os.environ.get('INK_PDF', 'notes.pdf')
 doc = pymupdf.open(PDF)
 _cache = {}
+PREC = int(os.environ.get('INK_PREC', 2))  # decimals kept in path data
 
 
 def strokes(pn):
     if pn not in _cache:
         out = []
         for d in doc[pn - 1].get_drawings():
-            c = d.get('color')
-            if d['type'] != 's' or not c or max(c) > 0.3:
+            c = d.get('color') if d['type'] == 's' else d.get('fill') if d['type'] == 'f' else None
+            if not c or max(c) > 0.3:
                 continue
             out.append(d)
         _cache[pn] = out
@@ -25,7 +28,7 @@ def strokes(pn):
 
 
 def f(v):
-    return f'{v:.2f}'.rstrip('0').rstrip('.')
+    return f'{v:.{PREC}f}'.rstrip('0').rstrip('.')
 
 
 def piece(pn, x0, y0, x1, y1, dx, dy, s, clip=False):
@@ -54,7 +57,7 @@ def piece(pn, x0, y0, x1, y1, dx, dy, s, clip=False):
                     seg.append('M%s %s' % T(a))
                 seg.append('C%s %s %s %s %s %s' % (*T(c1), *T(c2), *T(b))); last = b
         if seg:
-            paths.append((''.join(seg), w * s))
+            paths.append((''.join(seg) + ('Z' if d['type'] == 'f' else ''), 'fill' if d['type'] == 'f' else w * s))
     return paths
 
 
@@ -74,8 +77,10 @@ def build(pieces, pad=2):
     # group by stroke width
     groups = {}
     for d, w in allp:
-        groups.setdefault(round(w, 2), []).append(d)
-    body = ''.join(f'<path stroke-width="{w}" d="{"".join(ds)}"/>' for w, ds in groups.items())
+        groups.setdefault(w if w == 'fill' else round(w, 2), []).append(d)
+    body = ''.join(
+        f'<path fill="currentColor" stroke="none" d="{"".join(ds)}"/>' if w == 'fill' else f'<path stroke-width="{w}" d="{"".join(ds)}"/>'
+        for w, ds in groups.items())
     svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{f(mx)} {f(my)} {f(W)} {f(H)}" '
            f'fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">{body}</svg>')
     return svg, W, H

@@ -39,8 +39,8 @@ const links = [
     </figure>
 
     <div class="working">
-      <Ink name="eq-qudit" class="eq" label="Handwritten equation: U in SU of d, compiled into a product over k of e to the minus i H k t k." />
-      <Note class="n-eq" arrow="left" speak>what I'm working on: a qudit unitary, compiled into native pulses</Note>
+      <Ink name="eq-qudit" class="eq" label="Handwritten: U is approximately U N through U 2 U 1, a product of native gates, with U in SU of d." />
+      <Note class="n-eq" arrow="left" speak>what I'm working on: a qudit unitary, compiled into native gates</Note>
     </div>
   </div>
 </header>
@@ -84,7 +84,7 @@ const links = [
 
   .working { margin-top: var(--space-m); display: grid; gap: 0.3rem; justify-items: start; }
   .working :global(.eq) { width: min(100%, 22rem); }
-  .working :global(.n-eq) { font-size: clamp(1.1rem, 1rem + 0.4vw, 1.3rem); max-width: 22rem; transform: rotate(-1.5deg); margin-left: 0.5rem; }
+  .working :global(.n-eq) { font-size: clamp(1.1rem, 1rem + 0.4vw, 1.3rem); max-width: 100%; transform: rotate(-1.5deg); margin-left: 0.5rem; }
 
   /* On a phone: name and statement first, then the array, then the details. */
   @media (max-width: 52rem) {

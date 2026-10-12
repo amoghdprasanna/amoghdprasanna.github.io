@@ -27,7 +27,7 @@ const { Content } = await render(entry);
         {d.tags.length > 0 && <div><dt>Tools</dt><dd>{d.tags.join(', ')}</dd></div>}
         {d.links.length > 0 && <div><dt>Links</dt><dd>{d.links.map((x, i) => <>{i > 0 && ', '}<a href={x.url}>{x.label}</a></>)}</dd></div>}
       </dl>
-      {d.ink && <Ink name={d.ink} class="head-ink" label={`Handwritten, ${d.inkLabel ?? 'from my notes'}`} />}
+      {d.ink && <Ink name={d.ink} class="head-ink" label={d.inkAlt ?? `Handwritten, ${d.inkLabel ?? 'from my notes'}`} scale={0.08} />}
     </header>
     <div class="prose body">
       <Content />
@@ -51,7 +51,7 @@ const { Content } = await render(entry);
   .facts dt { text-transform: uppercase; letter-spacing: 0.06em; font-size: var(--step--2); padding-top: 0.15rem; }
   .facts dd { color: var(--fg); }
   .facts b { color: var(--accent); font-weight: 500; }
-  :global(.head-ink) { max-width: 16rem; margin-top: var(--space-m); }
+  :global(.head-ink) { max-width: 100%; margin-top: var(--space-m); }
   .body { margin-top: var(--space-l); padding-top: var(--space-m); border-top: 1px solid var(--line); }
   .next { margin-top: var(--space-xl); border-top: 1px solid var(--line); padding-top: var(--space-m); display: grid; gap: 0.4rem; }
   .next a { font-size: var(--step-2); text-decoration: none; font-weight: 500; }

@@ -94,6 +94,10 @@ your words), `order`, and optionally `note` (handwritten margin note) and
 `src/assets/ink/*.svg` are strokes lifted from my own notes (vector ink from an
 iPad PDF). To add one, see `tools/ink/README.md`.
 
+Margin notes and equation captions are drawn in my handwriting when their text
+matches an entry in `src/data/hand.ts`. If you change a note's wording, it
+switches back to the Caveat font until you write the new wording out by hand.
+
 ## Custom domain
 
 1. Add `public/CNAME` containing just the domain, e.g. `amoghdp.com`.

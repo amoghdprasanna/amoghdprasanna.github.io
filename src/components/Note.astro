@@ -1,16 +1,24 @@
 ---
 // A handwritten margin note. Decorative, so screen readers skip it when the
-// same idea is already in the text; pass `speak` to keep it.
+// same idea is already in the text; pass `speak` to keep it. If I've written
+// the note out by hand (src/data/hand.ts) it's drawn in my handwriting.
+import Ink from './Ink.astro';
+import { handFor, plain } from '../data/hand';
 interface Props { class?: string; style?: string; speak?: boolean; arrow?: 'left' | 'down' | 'none' }
 const { class: cls = '', style, speak = false, arrow = 'none' } = Astro.props;
+const text = plain(await Astro.slots.render('default'));
+const ink = handFor(text);
 ---
-<p class:list={['hand', 'note', cls]} style={style} aria-hidden={speak ? undefined : 'true'}>
+<p class:list={['hand', 'note', { inked: ink }, cls]} style={style} aria-hidden={speak ? undefined : 'true'}>
   {arrow === 'left' && (
     <svg class="arrow" viewBox="0 0 60 30" width="46" height="23" aria-hidden="true"><path d="M56 6C42 4 22 10 6 24M6 24l2-9M6 24l9-1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
   )}
-  <slot />
+  {ink ? <Ink name={ink} label={text} scale={0.062} /> : <slot />}
 </p>
 <style>
   .note { margin: 0; }
   .arrow { display: inline-block; vertical-align: -0.4em; margin-right: 0.25rem; }
+  .inked { display: flex; align-items: flex-start; gap: 0.3rem; }
+  .inked .arrow { flex: none; margin-top: 0.2em; }
+  .inked :global(.ink) { flex: 0 1 auto; min-width: 0; color: inherit; }
 </style>

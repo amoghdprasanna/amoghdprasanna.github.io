@@ -2,10 +2,12 @@
 import type { CollectionEntry } from 'astro:content';
 import Ink from './Ink.astro';
 import Note from './Note.astro';
+import { handFor } from '../data/hand';
 interface Props { entry: CollectionEntry<'research'> }
 const { entry } = Astro.props;
 const d = entry.data;
 const href = `/research/${entry.id}/`;
+const capInk = d.inkLabel && handFor(d.inkLabel);
 ---
 <article class="entry reveal">
   <p class="meta mono">{d.year} · {d.place}{d.collaborators.length > 0 && ` · with ${d.collaborators.map((c) => c.replace(/ \(.*\)$/, '')).join(', ')}`}</p>
@@ -22,8 +24,10 @@ const href = `/research/${entry.id}/`;
       <span class="chip">{d.status}</span>
     )}
     {d.metric && <span class="chip">{d.status}</span>}
-    {d.ink && <Ink name={d.ink} label={`Handwritten, ${d.inkLabel ?? 'from my notes'}`} class="eq" />}
-    {d.ink && d.inkLabel && <p class="ink-cap mono-plain">{d.inkLabel}</p>}
+    {d.ink && <Ink name={d.ink} label={d.inkAlt ?? `Handwritten, ${d.inkLabel ?? 'from my notes'}`} class="eq" scale={0.07} />}
+    {d.ink && d.inkLabel && (capInk
+      ? <Ink name={capInk} label={d.inkLabel} class="ink-cap-hand" scale={0.055} />
+      : <p class="ink-cap mono-plain">{d.inkLabel}</p>)}
   </div>
   {d.note && <Note class="margin">{d.note}</Note>}
 </article>
@@ -45,7 +49,8 @@ const href = `/research/${entry.id}/`;
   .aside { display: grid; gap: 0.7rem; justify-items: end; align-content: start; text-align: right; }
   .metric b { display: block; font: 400 clamp(2.4rem, 2rem + 1.8vw, 3.4rem) / 1 var(--serif); font-variant-numeric: lining-nums; }
   .metric span { display: block; margin-top: 0.5rem; max-width: 24ch; margin-left: auto; line-height: 1.5; }
-  .aside :global(.eq) { width: 100%; max-width: 15rem; margin-top: 0.6rem; }
+  .aside :global(.eq) { max-width: 100%; margin-top: 0.6rem; }
+  .aside :global(.ink-cap-hand) { max-width: 100%; color: var(--accent); margin-top: -0.2rem; }
   .ink-cap { font-size: var(--step--2); max-width: 22ch; }
   .entry :global(.margin) {
     position: absolute; left: calc(-1 * var(--label-col) - var(--space-l) + 0.5rem); top: 4.2rem;
@@ -55,7 +60,7 @@ const href = `/research/${entry.id}/`;
     .entry { grid-template-columns: minmax(0, 1fr); }
     .aside { justify-items: start; text-align: left; grid-template-columns: auto auto; align-items: end; justify-content: start; gap: 0.5rem 1rem; }
     .metric span { margin-left: 0; }
-    .aside :global(.eq), .ink-cap { grid-column: 1 / -1; }
+    .aside :global(.eq), .aside :global(.ink-cap-hand), .ink-cap { grid-column: 1 / -1; }
     .entry :global(.margin) { position: static; transform: rotate(-1.5deg); width: auto; margin-top: 0.4rem; }
   }
 </style>

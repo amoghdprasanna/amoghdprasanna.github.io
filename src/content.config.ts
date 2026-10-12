@@ -19,6 +19,9 @@ const research = defineCollection({
     links: z.array(link).default([]),
     // Handwritten equation from src/assets/ink shown beside the card.
     ink: z.string().optional(),
+    // What the equation says, for screen readers.
+    inkAlt: z.string().optional(),
+    // Caption under it; drawn by hand if it matches src/data/hand.ts.
     inkLabel: z.string().optional(),
     note: z.string().optional(),
     draft: z.boolean().default(false),

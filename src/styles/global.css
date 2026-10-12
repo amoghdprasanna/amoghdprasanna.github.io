@@ -187,7 +187,7 @@ a:hover { text-decoration-color: var(--accent); }
   font-family: var(--hand); font-weight: 500; color: var(--accent);
   font-size: clamp(1.25rem, 1.1rem + 0.5vw, 1.55rem); line-height: 1.05;
 }
-.ink { color: var(--ink); }
+.ink { display: block; color: var(--ink); }
 .ink svg { width: 100%; height: auto; overflow: visible; }
 
 /* Gentle scroll-driven reveals where supported. No JS, no scroll-jacking. */
