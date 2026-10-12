@@ -26,7 +26,7 @@ const updated = 'October 2026';
       {education.map((e) => (
         <div class="item">
           <div class="head"><strong>{e.school}</strong><span class="mono-plain">{e.dates}</span></div>
-          <p><i>{e.degree}</i>, {e.detail}. {e.place}.</p>
+          <p><i>{e.degree}</i>{e.detail && `, ${e.detail}`}. {e.place}.</p>
         </div>
       ))}
     </section>

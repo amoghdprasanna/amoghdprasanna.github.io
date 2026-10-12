@@ -117,7 +117,7 @@ const jsonLd = {
       {education.map((e) => (
         <li>
           <span class="when mono-plain">{e.dates}</span>
-          <span><strong>{e.school}</strong>, {e.place}<br /><span class="dim">{e.degree}. {e.detail}.</span></span>
+          <span><strong>{e.school}</strong>, {e.place}<br /><span class="dim">{[e.degree, e.detail].filter(Boolean).join('. ')}.</span></span>
         </li>
       ))}
     </ul>
