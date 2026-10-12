@@ -43,8 +43,8 @@ export const coursework = [
 ];
 
 export const schools = [
-  { title: 'IBM Global Summer School (selected)', year: '2026' },
-  { title: 'RQS Simulation Summer School, UMD (selected)', year: '2026' },
+  { title: 'IBM Qiskit Global Summer School', year: '2026' },
+  { title: 'RQS Simulation Summer School, UMD', year: '2026' },
 ];
 
 export const industry = [
@@ -60,13 +60,6 @@ export const industry = [
       'Built and maintained a cloud-hosted API gateway on AWS in front of SQL and NoSQL backends for release operations.',
       'Low-level libcurl DLL work, and eSign software handling secure classification and storage of release data.',
     ],
-  },
-  {
-    org: 'Aujas Cybersecurity',
-    role: 'Purple Team Security Intern',
-    place: 'Bengaluru',
-    dates: 'Mar 2022 – Jun 2022',
-    points: ['Red and purple team penetration tests against Active Directory endpoints using the MITRE ATT&CK framework.'],
   },
 ];
 
