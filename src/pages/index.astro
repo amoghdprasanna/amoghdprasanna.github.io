@@ -54,13 +54,13 @@ const jsonLd = {
   <Section id="interests" num="01" title="Research interests">
     <div slot="aside" class="aside-inks no-print">
       <div>
-        <Ink name="eq-gkp" scale={0.05} label="Handwritten: S q equals e to the i 2 root pi p hat, S p equals e to the i 2 root pi q hat, the GKP code's stabilizers." />
+        <Ink name="eq-gkp" scale={0.068} label="Handwritten: S q equals e to the i 2 root pi p hat, S p equals e to the i 2 root pi q hat, the GKP code's stabilizers." />
         <Ink name="note-oscillator" class="cap" scale={0.05} label="a qubit inside an oscillator" />
       </div>
-      <Ink name="eq-trotter" scale={0.05} label="Handwritten: e to the minus i H t is approximately the product over k of e to the minus i H k t over n, all to the n, a Trotter step." />
+      <Ink name="eq-trotter" scale={0.06} label="Handwritten: e to the minus i H t is approximately the product over k of e to the minus i H k t over n, all to the n, a Trotter step." />
       <div>
-        <Ink name="eq-bpp" scale={0.05} label="Handwritten: BPP is contained in BQP, which is contained in PP." />
-        <Ink name="note-line" class="cap" scale={0.05} label="where the line sits" />
+        <Ink name="eq-bpp" scale={0.066} label="Handwritten: BPP is contained in BQP, which is contained in PP." />
+        <Ink name="note-line" class="cap" scale={0.062} label="where the line sits" />
       </div>
     </div>
     <div class="prose interests">
@@ -69,7 +69,7 @@ const jsonLd = {
         <blockquote>
           <p>Nature isn't classical, dammit, and if you want to make a simulation of nature, you'd better make it quantum mechanical.</p>
         </blockquote>
-        <figcaption class="mono-plain">Richard P. Feynman, <a href="https://doi.org/10.1007/BF02650179"><cite>Simulating Physics with Computers</cite></a> (1982). Lettering generated with AI, not his handwriting.</figcaption>
+        <figcaption class="mono-plain">Richard P. Feynman, <a href="https://doi.org/10.1007/BF02650179"><cite>Simulating Physics with Computers</cite></a> (1982).</figcaption>
       </figure>
       <p>
         I'm interested in <strong>quantum error correction</strong>, <strong>quantum simulation</strong> and <strong>quantum complexity</strong>: how to keep quantum information intact, what a quantum computer can simulate that a classical one can't, and how to prove where that line sits.
@@ -196,7 +196,7 @@ const jsonLd = {
   @media print { .epigraph .script { display: none; } }
   .epigraph figcaption { margin-top: 0.6rem; font-size: var(--step--1); color: var(--mute); }
   .epigraph figcaption a { color: inherit; }
-  .aside-inks { display: grid; gap: 1.4rem; margin-top: 1.6rem; justify-items: start; font-size: 1.2rem; }
+  .aside-inks { display: grid; gap: 1.4rem; margin-top: 1.6rem; justify-items: start; font-size: 1.55rem; }
   .aside-inks :global(.ink) { max-width: 100%; }
   .aside-inks :global(.cap) { color: var(--accent); margin-top: 0.3rem; }
 
@@ -233,6 +233,6 @@ const jsonLd = {
     .cards { grid-template-columns: minmax(0, 1fr); }
     .rows li { grid-template-columns: minmax(0, 1fr); gap: 0.1rem; }
     .book :global(.margin) { position: static; grid-column: 2; transform: rotate(-2deg); }
-    .aside-inks { margin-top: 0.8rem; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem 1.8rem; font-size: 1.05rem; }
+    .aside-inks { margin-top: 0.8rem; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem 1.8rem; font-size: 1.3rem; }
   }
 </style>

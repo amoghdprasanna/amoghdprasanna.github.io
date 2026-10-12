@@ -13,7 +13,7 @@ const ink = handFor(text);
   {arrow === 'left' && (
     <svg class="arrow" viewBox="0 0 60 30" width="46" height="23" aria-hidden="true"><path d="M56 6C42 4 22 10 6 24M6 24l2-9M6 24l9-1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
   )}
-  {ink ? <Ink name={ink} label={text} scale={0.062} /> : <slot />}
+  {ink ? <Ink name={ink} label={text} scale={0.08} /> : <slot />}
 </p>
 <style>
   .note { margin: 0; }

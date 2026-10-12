@@ -16,7 +16,7 @@ INK_PREC=1 INK_PDF=~/path/to/notes.pdf .venv/bin/python ink.py notebook.json ../
   path data, which keeps the files small.
 - `notebook.json` is the current set, cut from a two-page notes PDF (equations
   on page 2, margin notes on page 1). Several pieces in one entry compose a
-  new layout: the `)` added to `eq-loss`, and the line breaks in the longer
+  new layout: the `)` added to `eq-loss`, the line breaks in `eq-loss`, `eq-gkp` and the longer
   notes. `crops.json` is the older set (only `eq-purity` is still used).
 - Notes: `src/data/hand.ts` maps a note's text to its ink, so any `<Note>` or
   `inkLabel` caption whose text matches is drawn in my handwriting. Change

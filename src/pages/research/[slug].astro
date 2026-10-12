@@ -27,7 +27,7 @@ const { Content } = await render(entry);
         {d.tags.length > 0 && <div><dt>Tools</dt><dd>{d.tags.join(', ')}</dd></div>}
         {d.links.length > 0 && <div><dt>Links</dt><dd>{d.links.map((x, i) => <>{i > 0 && ', '}<a href={x.url}>{x.label}</a></>)}</dd></div>}
       </dl>
-      {d.ink && <Ink name={d.ink} class="head-ink" label={d.inkAlt ?? `Handwritten, ${d.inkLabel ?? 'from my notes'}`} scale={0.08} />}
+      {d.ink && <Ink name={d.ink} class="head-ink" label={d.inkAlt ?? `Handwritten, ${d.inkLabel ?? 'from my notes'}`} scale={0.105} />}
     </header>
     <div class="prose body">
       <Content />
