@@ -44,7 +44,7 @@ export const coursework = [
 
 export const schools = [
   { title: 'IBM Qiskit Global Summer School', year: '2026' },
-  { title: 'RQS Simulation Summer School, UMD', year: '2026' },
+  { title: 'RQS Summer School - UMD, College Park', year: '2026' },
 ];
 
 export const industry = [
