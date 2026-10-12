@@ -191,8 +191,9 @@ const jsonLd = {
   .interests p + p { color: var(--mute); }
   .epigraph { margin: 0 0 var(--space-m); padding-left: 1.1rem; border-left: 2px solid var(--accent); }
   .epigraph .script { width: min(100%, 40rem); background: var(--fg); -webkit-mask: var(--src) no-repeat left / contain; mask: var(--src) no-repeat left / contain; }
-  .epigraph .sig { display: block; width: min(45%, 13rem); margin: -0.4rem 0 0 calc(min(100%, 40rem) - min(45%, 13rem)); color: var(--fg); opacity: 0.85; }
-  .epigraph .sig :global(svg) { display: block; width: 100%; height: auto; }
+  .epigraph .sig { display: flex; align-items: center; gap: 0.5rem; width: min(52%, 15rem); margin: -0.4rem 0 0 calc(min(100%, 40rem) - min(52%, 15rem)); color: var(--fg); opacity: 0.85; }
+  .epigraph .sig::before { content: ''; flex: none; width: 0.7rem; height: 1.5px; border-radius: 1px; background: currentColor; transform: translateY(-0.15rem); }
+  .epigraph .sig :global(svg) { display: block; flex: 1; min-width: 0; height: auto; }
   .epigraph blockquote p { font-style: italic; font-size: var(--step-1); line-height: 1.45; color: var(--fg); }
   @media screen {
     .epigraph blockquote { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
