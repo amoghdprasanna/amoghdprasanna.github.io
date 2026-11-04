@@ -1,56 +1,112 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, type CollectionEntry } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import Note from '../components/Note.astro';
+import { readingTopics, resourceTopics } from '../content.config';
 
 const all = (await getCollection('readings')).sort((a, b) => a.data.order - b.data.order);
-const shelves = ['Ongoing', 'On doing research', 'Mindset'] as const;
+const group = (kind: 'reading' | 'resource', topics: readonly string[]) =>
+  topics
+    .map((t) => ({ topic: t, items: all.filter((r) => r.data.kind === kind && r.data.topic === t) }))
+    .filter((g) => g.items.length > 0);
+const readings = group('reading', readingTopics);
+const resources = group('resource', resourceTopics);
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, '');
+type Entry = CollectionEntry<'readings'>;
 ---
 
-<Base title="Readings" description="Annotated readings: what I took from each, in a line.">
+<Base title="Readings & resources" description="An annotated shelf of what shaped how I think about quantum computing and research, and the tools my research is built on.">
   <div class="wrap page">
     <p class="crumb mono"><a href="/">← Home</a></p>
-    <h1>Readings</h1>
-    <p class="lede">An annotated shelf. Each entry is one line on what I took from it.</p>
-    {shelves.map((s) => (
-      <section aria-labelledby={`s-${s}`}>
-        <h2 id={`s-${s}`} class="mono">{s}</h2>
-        <ul role="list">
-          {all.filter((r) => r.data.shelf === s).map((r) => (
-            <li class="book">
-              <span class="year mono-plain">{r.data.year}</span>
-              <div>
-                <p><a href={r.data.url}><strong>{r.data.title}</strong></a>, <span class="author">{r.data.author}</span></p>
-                {r.data.venue && <p class="venue mono-plain">{r.data.venue}</p>}
-                <p class="take">{r.data.takeaway}</p>
-              </div>
-              {r.data.note && <Note class="margin">{r.data.note}</Note>}
-            </li>
-          ))}
-        </ul>
+    <h1>Readings <span class="amp">&amp;</span> resources</h1>
+    <p class="lede">What shaped how I think about quantum computing and about doing research, one line each on what I took from it. Below that, the tools my research is built on.</p>
+    <nav class="jump mono" aria-label="On this page">
+      <a href="#readings">Readings</a>
+      {resources.length > 0 && <a href="#resources">Resources</a>}
+    </nav>
+
+    <section id="readings" class="part" aria-labelledby="readings-h">
+      <h2 id="readings-h">Readings</h2>
+      {readings.map(({ topic, items }) => (
+        <section class="topic" aria-labelledby={`t-${slug(topic)}`}>
+          <h3 id={`t-${slug(topic)}`} class="mono">{topic}</h3>
+          <ul role="list">
+            {items.map((r: Entry) => (
+              <li class="book">
+                <span class="year mono-plain">
+                  {r.data.year}
+                  {r.data.status && <span class="status">{r.data.status}</span>}
+                </span>
+                <div>
+                  <p><a href={r.data.url}><strong>{r.data.title}</strong></a>{r.data.author && <>, <span class="author">{r.data.author}</span></>}</p>
+                  {r.data.venue && <p class="venue mono-plain">{r.data.venue}</p>}
+                  <p class="take">{r.data.takeaway}</p>
+                </div>
+                {r.data.note && <Note class="margin">{r.data.note}</Note>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </section>
+
+    {resources.length > 0 && (
+      <section id="resources" class="part" aria-labelledby="resources-h">
+        <h2 id="resources-h">Resources</h2>
+        <p class="intro">The open-source tools my research is built on.</p>
+        {resources.map(({ topic, items }) => (
+          <section class="topic" aria-labelledby={`t-${slug(topic)}`}>
+            <h3 id={`t-${slug(topic)}`} class="mono">{topic}</h3>
+            <ul role="list" class="refs">
+              {items.map((r: Entry) => (
+                <li>
+                  <p><a href={r.data.url}><strong>{r.data.title}</strong></a>{r.data.author && <span class="author"> · {r.data.author}</span>}</p>
+                  <p class="take">{r.data.takeaway}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
       </section>
-    ))}
+    )}
   </div>
 </Base>
 
 <style>
   .page { padding-block: var(--space-l) var(--space-xl); max-width: 58rem; }
   .crumb a { text-decoration: none; }
-  h1 { font-size: var(--step-4); font-weight: 340; letter-spacing: -0.025em; margin-top: var(--space-m); }
-  .lede { color: var(--mute); font-size: var(--step-1); margin-top: 0.6rem; }
-  section { margin-top: var(--space-l); }
-  h2 { border-bottom: 1px solid var(--line); padding-bottom: 0.6rem; }
+  h1 { font-size: var(--step-4); font-weight: 340; letter-spacing: -0.025em; line-height: 1.05; margin-top: var(--space-m); text-wrap: balance; }
+  h1 .amp { font-style: italic; color: var(--accent); }
+  .lede { color: var(--mute); font-size: var(--step-1); line-height: 1.5; margin-top: 0.9rem; max-width: 52ch; text-wrap: pretty; }
+  .jump { display: flex; gap: 1.4rem; margin-top: var(--space-m); }
+  .jump a { color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--faint); padding-bottom: 2px; }
+  .jump a:hover { border-color: var(--accent); }
+
+  .part { margin-top: var(--space-xl); }
+  .part > h2 { font-size: var(--step-2); font-weight: 400; letter-spacing: -0.01em; }
+  .intro { color: var(--mute); margin-top: 0.4rem; max-width: 60ch; }
+  .topic { margin-top: var(--space-l); }
+  .topic h3 { border-bottom: 1px solid var(--line); padding-bottom: 0.6rem; }
   ul { list-style: none; padding: 0; }
-  .book { position: relative; display: grid; grid-template-columns: 5rem minmax(0, 1fr) 11rem; gap: 1rem; padding-block: 1.2rem; border-bottom: 1px solid var(--line); }
-  .book a { text-decoration: none; }
-  .book a:hover strong { text-decoration: underline; text-decoration-color: var(--accent); }
-  .year { padding-top: 0.25rem; }
+  a { text-decoration: none; }
+  li a:hover strong { text-decoration: underline; text-decoration-color: var(--accent); }
   .author { color: var(--mute); font-style: italic; }
+  .take { margin-top: 0.4rem; max-width: 60ch; }
+
+  .book { position: relative; display: grid; grid-template-columns: 5rem minmax(0, 1fr) 11rem; gap: 1rem; padding-block: 1.2rem; border-bottom: 1px solid var(--line); }
+  .year { padding-top: 0.25rem; }
+  .status { display: block; font-size: var(--step--2); color: var(--accent); letter-spacing: 0.02em; }
   .venue { margin-top: 0.2rem; font-size: var(--step--2); }
-  .take { margin-top: 0.5rem; max-width: 60ch; }
   .book :global(.margin) { transform: rotate(-3deg); align-self: center; }
+
+  .refs li { padding-block: 1rem; border-bottom: 1px solid var(--line); }
+  .refs .author { font-style: normal; font-family: var(--mono); font-size: var(--step--2); }
+  .refs .take { color: var(--mute); margin-top: 0.25rem; }
+
   @media (max-width: 40rem) {
     .book { grid-template-columns: minmax(0, 1fr); gap: 0.3rem; }
+    .year { display: flex; gap: 0.6rem; padding-top: 0; }
+    .status { display: inline; }
     .book :global(.margin) { transform: rotate(-1.5deg); }
   }
 </style>

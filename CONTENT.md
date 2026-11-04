@@ -69,12 +69,31 @@ $$
 
 Edit `src/content/now.md`: change `updated:` and the bullet list.
 
-## Add a reading
+## Add a reading or a resource
 
-Create `src/content/readings/<name>.md` with `title`, `author`, `year`, `url`,
-`shelf` (`Ongoing`, `On doing research` or `Mindset`), `takeaway` (one line in
-your words), `order`, and optionally `note` (handwritten margin note) and
-`teaser: true` to show it on the homepage.
+Create `src/content/readings/<name>.md`. Readings go on the shelf with a
+takeaway; resources (tools, references) go in the Resources list below it.
+
+```md
+---
+title: Quantum Computation and Quantum Information
+author: Nielsen and Chuang
+year: "2000"
+url: https://...
+kind: reading            # reading (default) | resource
+topic: Quantum computing & complexity
+status: reading          # optional: read | reading | want to read | following
+takeaway: One line in your words on what you took from it.
+note: a margin note      # optional, handwritten
+teaser: true             # optional, shows it on the homepage
+order: 5
+---
+```
+
+Topics: readings use `Quantum computing & complexity` or `Doing research`;
+resources use `Software & simulation`. Add a topic in
+`src/content.config.ts` (`readingTopics` / `resourceTopics`); empty topics are
+hidden. Leave `status` out unless it's true: no label is shown without it.
 
 ## Software
 

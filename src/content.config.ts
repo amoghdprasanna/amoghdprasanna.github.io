@@ -64,15 +64,23 @@ const software = defineCollection({
   }),
 });
 
+// One collection for the shelf (things read or followed, with a takeaway) and
+// for resources (tools and references worth pointing people to). `status` is
+// left out unless it's actually known.
+export const readingTopics = ['Quantum computing & complexity', 'Doing research'] as const;
+export const resourceTopics = ['Software & simulation'] as const;
+
 const readings = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/readings' }),
   schema: z.object({
     title: z.string(),
-    author: z.string(),
-    year: z.string(),
+    author: z.string().optional(),
+    year: z.string().optional(),
     venue: z.string().optional(),
     url: z.string(),
-    shelf: z.enum(['Ongoing', 'On doing research', 'Mindset']),
+    kind: z.enum(['reading', 'resource']).default('reading'),
+    topic: z.enum([...readingTopics, ...resourceTopics]),
+    status: z.enum(['read', 'reading', 'want to read', 'following']).optional(),
     takeaway: z.string(),
     note: z.string().optional(),
     teaser: z.boolean().default(false),
