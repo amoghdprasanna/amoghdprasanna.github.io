@@ -6,7 +6,7 @@ export const education = [
     school: 'University of Maryland, College Park',
     place: 'College Park, MD',
     dates: 'Aug 2025 – May 2027',
-    degree: 'Masters in Computer Science Equivalent',
+    degree: 'Master of Engineering (M.Eng.)',
     detail: 'GPA 3.9/4.0',
   },
   {
