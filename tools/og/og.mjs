@@ -1,5 +1,5 @@
 // Renders public/og.png (1200x630) from the running site's hero, so the share
-// image uses the real fonts and the real tweezer array.
+// image uses the real fonts and the real space-time figure.
 // Usage: npm run build && npx astro preview, then in another shell:
 //   npx -y -p puppeteer-core@23.11.1 node tools/og/og.mjs [chrome path]
 import puppeteer from 'puppeteer-core';
@@ -11,7 +11,7 @@ await p.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: 'dark' }, {
 await p.goto('http://localhost:4321/', { waitUntil: 'networkidle0' });
 await p.evaluate(async () => {
   await document.fonts.ready;
-  const src = document.querySelector('[data-tweezer] canvas');
+  const src = document.querySelector('[data-spacetime] canvas');
   const img = src.toDataURL('image/png');
   const eq = document.querySelector('.working .ink').innerHTML;
   document.body.innerHTML = `
