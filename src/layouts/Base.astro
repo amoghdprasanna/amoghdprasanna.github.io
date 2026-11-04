@@ -27,8 +27,8 @@ const og = new URL(ogImage, Astro.site).href;
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <meta name="color-scheme" content="dark light" />
-    <meta name="theme-color" content="#0d0d10" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#f8f5ef" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0d0d10" media="(prefers-color-scheme: dark)" data-dark="#0d0d10" data-light="#f8f5ef" />
+    <meta name="theme-color" content="#f8f5ef" media="(prefers-color-scheme: light)" data-dark="#0d0d10" data-light="#f8f5ef" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
 
@@ -43,11 +43,16 @@ const og = new URL(ogImage, Astro.site).href;
     <meta name="twitter:card" content="summary_large_image" />
 
     <script is:inline>
-      // Set the theme before first paint: stored choice, else the system preference.
-      try {
-        const t = localStorage.getItem('theme');
-        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
-      } catch (e) {}
+      // Resolve the theme before first paint: stored choice, else the system
+      // preference. data-theme is always set, so the CSS defines each theme once.
+      // Without JS the site stays in its default dark theme.
+      (function () {
+        let t = null;
+        try { t = localStorage.getItem('theme'); } catch (e) {}
+        if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        document.documentElement.dataset.theme = t;
+        document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.content = m.dataset[t]; });
+      })();
     </script>
 
     <Font cssVariable="--font-serif" preload={[{ style: 'normal' }]} />

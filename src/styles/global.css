@@ -38,6 +38,8 @@
   --label-col: 13.5rem;
 }
 
+/* Base.astro always sets data-theme (stored choice, else the system preference),
+   so the light theme is defined once. Without JS the site stays dark. */
 :root[data-theme='light'] {
   color-scheme: light;
   --bg: oklch(0.975 0.008 85);
@@ -52,24 +54,6 @@
   --ink: oklch(0.42 0.17 290);
   --atom: oklch(0.25 0.02 290);
   --glow: 0.4;
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) {
-    color-scheme: light;
-    --bg: oklch(0.975 0.008 85);
-    --bg-2: oklch(0.955 0.01 85);
-    --fg: oklch(0.21 0.01 60);
-    --mute: oklch(0.46 0.012 60);
-    --faint: oklch(0.76 0.012 70);
-    --line: oklch(0.88 0.012 75);
-    --dot: oklch(0.2 0.02 60 / 0.06);
-    --accent: oklch(0.5 0.2 290);
-    --accent-soft: oklch(0.5 0.2 290 / 0.1);
-    --ink: oklch(0.42 0.17 290);
-    --atom: oklch(0.25 0.02 290);
-  --glow: 0.4;
-  }
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -134,14 +118,20 @@ a:hover { text-decoration-color: var(--accent); }
   grid-template-columns: var(--label-col) minmax(0, 1fr);
   gap: var(--space-m) var(--space-l);
 }
-.section > .label { position: sticky; top: 5rem; align-self: start; }
+/* The pinned label is painted over the page so margin notes in the label
+   column slide under it instead of through it; the shadows cover the gap up to
+   the header and soften the lower edge. */
+.section > .label {
+  position: sticky; top: 5rem; align-self: start; z-index: 2;
+  background: var(--bg); box-shadow: 0 -1.5rem 0 var(--bg), 0 0.75rem 1.25rem 0.4rem var(--bg);
+}
 .section > .label .num { display: block; color: var(--accent); margin-bottom: 0.3rem; }
 .section > .label h2 { font: inherit; letter-spacing: inherit; }
 .section .body { min-width: 0; position: relative; }
 
 @media (max-width: 52rem) {
   .section { grid-template-columns: minmax(0, 1fr); }
-  .section > .label { position: static; }
+  .section > .label { position: static; box-shadow: none; }
 }
 
 .prose { max-width: var(--measure); }

@@ -57,10 +57,17 @@ const capInk = d.inkLabel && handFor(d.inkLabel);
     width: calc(var(--label-col) - 1rem); transform: rotate(-3deg);
   }
   @media (max-width: 52rem) {
+    /* One column, read top to bottom: title, margin note, summary, tags, then
+       the metric and equation, with "Read more" last so it closes the entry. */
     .entry { grid-template-columns: minmax(0, 1fr); }
+    .main { display: contents; }
+    .entry > :global(.margin) { order: 1; }
+    .summary, .tags { order: 2; }
+    .aside { order: 3; margin-top: 1rem; }
+    .main > .more { order: 4; margin-top: 1.2rem; }
     .aside { justify-items: start; text-align: left; grid-template-columns: auto auto; align-items: end; justify-content: start; gap: 0.5rem 1rem; }
     .metric span { margin-left: 0; }
     .aside :global(.eq), .aside :global(.ink-cap-hand), .ink-cap { grid-column: 1 / -1; }
-    .entry :global(.margin) { position: static; transform: rotate(-1.5deg); width: auto; margin-top: 0.4rem; }
+    .entry :global(.margin) { position: static; transform: rotate(-1.5deg); width: auto; margin-top: 0.2rem; justify-self: start; }
   }
 </style>
