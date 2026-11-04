@@ -1,7 +1,8 @@
 // Tweezer array, drawn in monospace characters: atoms load into an 8 x 6 grid
 // of optical traps at random, are moved into a defect-free 4 x 4 block, and
-// are entangled by a Rydberg pulse that sweeps across it. Plays once, then
-// stops. Canvas 2D, one glyph per character cell, no glow.
+// are entangled by a Rydberg pulse that sweeps across it. Plays once, then the
+// entangled block breathes gently. Canvas 2D: a soft violet glow layer under a
+// grid of glyphs, one glyph per character cell.
 
 type Atom = { c: number; r: number; t0: number; from?: [number, number]; to?: [number, number]; m0?: number; gone?: number };
 type Tone = 'faint' | 'mute' | 'atom' | 'accent';
@@ -23,12 +24,14 @@ export function mountTweezer(root: HTMLElement) {
 
   let W = 0, H = 0, dpr = 1, fs = 14, cw = 8, ch = 16, font = 'monospace';
   let col: Record<Tone, string> = { faint: '#444', mute: '#999', atom: '#fff', accent: '#a898ff' };
-  let atoms: Atom[] = [], start = 0, raf = 0, visible = true, sortEnd = 0;
+  let atoms: Atom[] = [], start = 0, raf = 0, visible = true, sortEnd = 0, glowK = 1;
 
   const readColors = () => {
     const s = getComputedStyle(root);
     const v = (n: string) => s.getPropertyValue(n).trim();
     col = { faint: v('--faint'), mute: v('--mute'), atom: v('--atom'), accent: v('--accent') };
+    glowK = parseFloat(v('--glow')) || 1; // full in dark, softer in light
+    sprite = null;
     font = getComputedStyle(phases[0] ?? root).fontFamily;
   };
   // Trap sites sit on character cells with a whole number of cells between
@@ -73,14 +76,36 @@ export function mountTweezer(root: HTMLElement) {
     layout();
   }
 
+  // One pre-rendered radial glow, stamped with drawImage (a gradient per atom
+  // per frame is what made the first version slow on phones).
+  let sprite: HTMLCanvasElement | null = null;
+  const glowAt = (x: number, y: number, rad: number, a: number) => {
+    if (!sprite) {
+      sprite = document.createElement('canvas'); sprite.width = sprite.height = 128;
+      const s = sprite.getContext('2d')!, g = s.createRadialGradient(64, 64, 0, 64, 64, 64);
+      // Fade to the accent at zero alpha, not to 'transparent' (black), or the edge goes grey.
+      const clear = col.accent.replace(/\)\s*$/, ' / 0)').replace(/\s*\/\s*[\d.]+%?\s*\/ 0\)$/, ' / 0)');
+      g.addColorStop(0, col.accent); g.addColorStop(1, clear);
+      s.fillStyle = g; s.fillRect(0, 0, 128, 128);
+    }
+    ctx.globalAlpha = a * glowK;
+    ctx.drawImage(sprite, x - rad, y - rad, 2 * rad, 2 * rad);
+  };
+  const px = (x: number, y: number): [number, number] => [x * cw + cw / 2, y * ch + ch / 2];
+
   function frame(t: number) {
-    // One glyph per cell; later writes win, so draw back to front.
+    // Glows go on first, under the glyphs. One glyph per cell; later writes win.
+    const glows: [number, number, number, number][] = [];
     const cells = new Map<string, [string, Tone, number]>();
     const put = (x: number, y: number, g: string, tone: Tone, a = 1) => { if (a > 0.02) cells.set(`${x},${y}`, [g, tone, a]); };
 
     const ent = clamp((t - T.ent) / T.entDur);
     const [bx0, by0] = site(B.c0, B.r0), [bx1, by1] = site(B.c1, B.r1);
     const front = bx0 - 2 + ent * (bx1 - bx0 + 4); // pulse position, in cells
+    const idle = t > T.ent + T.entDur ? (Math.sin((t - T.ent - T.entDur) / 1400 - Math.PI / 2) + 1) / 2 : 0;
+    const [hx0, hy0] = px(bx0, by0), [hx1, hy1] = px(bx1, by1);
+    // Halo over the entangled block.
+    if (ent > 0) glows.push([(hx0 + hx1) / 2, (hy0 + hy1) / 2, (hx1 - hx0) * 0.95, 0.16 * ent + 0.06 * idle]);
 
     // Empty traps.
     const traps = clamp(t / T.load);
@@ -95,10 +120,15 @@ export function mountTweezer(root: HTMLElement) {
     if (ent > 0) {
       for (let r = B.r0; r <= B.r1; r++) for (let c = B.c0; c <= B.c1; c++) {
         const [x, y] = site(c, r);
-        if (c < B.c1) { const [x2] = site(c + 1, r); for (let i = x + 1; i < x2; i++) if (i < front) put(i, y, '┄', 'accent', 0.6); }
-        if (r < B.r1 && x < front) { const [, y2] = site(c, r + 1); for (let j = y + 1; j < y2; j++) put(x, j, '┆', 'accent', 0.6); }
+        const bond = 0.5 + 0.2 * idle;
+        if (c < B.c1) { const [x2] = site(c + 1, r); for (let i = x + 1; i < x2; i++) if (i < front) put(i, y, '┄', 'accent', bond); }
+        if (r < B.r1 && x < front) { const [, y2] = site(c, r + 1); for (let j = y + 1; j < y2; j++) put(x, j, '┆', 'accent', bond); }
       }
-      if (ent < 1) for (let j = by0 - 1; j <= by1 + 1; j++) put(Math.round(front), j, '┊', 'accent', 0.7 * Math.sin(Math.PI * ent));
+      if (ent < 1) {
+        for (let j = by0 - 1; j <= by1 + 1; j++) put(Math.round(front), j, '┊', 'accent', 0.7 * Math.sin(Math.PI * ent));
+        const [fx] = px(front, 0);
+        for (let j = by0; j <= by1; j += 1) glows.push([fx, px(0, j)[1], ch * 1.6, 0.12 * Math.sin(Math.PI * ent)]);
+      }
     }
 
     // Atoms.
@@ -117,6 +147,7 @@ export function mountTweezer(root: HTMLElement) {
           }
           const x = Math.round(fx + (tx - fx) * p), y = Math.round(fy + (ty - fy) * p);
           put(x - 1, y, '(', 'accent'); put(x + 1, y, ')', 'accent'); put(x, y, '●', 'atom');
+          glows.push([...px(x, y), cw * 2.4, 0.35]);
           continue;
         }
         [c, r] = a.to;
@@ -127,10 +158,14 @@ export function mountTweezer(root: HTMLElement) {
         g = LOAD[LOAD.length - 1 - out];
       }
       const [x, y] = site(c, r);
-      put(x, y, g, ent > 0 && inBlock(c, r) && x < front ? 'accent' : 'atom');
+      const bonded = ent > 0 && inBlock(c, r) && x < front;
+      put(x, y, g, bonded ? 'accent' : 'atom');
+      const grown = LOAD.indexOf(g) / (LOAD.length - 1);
+      glows.push([...px(x, y), cw * (bonded ? 2.6 : 2.1), grown * (bonded ? 0.3 + 0.1 * idle : 0.22)]);
     }
 
     ctx.clearRect(0, 0, W, H);
+    for (const [x, y, rad, a] of glows) if (a > 0.01) glowAt(x, y, rad, a);
     // Filled atoms are set a size up from the grid so they carry the figure.
     const small = `${fs}px ${font}`, big = `${Math.round(fs * 1.35)}px ${font}`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -151,10 +186,11 @@ export function mountTweezer(root: HTMLElement) {
     if (!start) start = now;
     const t = now - start;
     frame(t);
-    raf = t < END() && visible && !document.hidden ? requestAnimationFrame(loop) : 0;
+    // After the sequence the block keeps breathing, only while it is on screen.
+    raf = visible && !document.hidden ? requestAnimationFrame(loop) : 0;
   }
   const done = () => start > 0 && performance.now() - start >= END();
-  const run = () => { if (!raf && visible && !reduce.matches && !done()) raf = requestAnimationFrame(loop); };
+  const run = () => { if (!raf && visible && !document.hidden && !reduce.matches) raf = requestAnimationFrame(loop); };
   const still = () => { cancelAnimationFrame(raf); raf = 0; frame(END()); };
 
   function play() {

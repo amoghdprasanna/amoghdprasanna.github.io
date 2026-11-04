@@ -53,7 +53,7 @@
   --accent-soft: oklch(0.5 0.2 290 / 0.1);
   --ink: oklch(0.42 0.17 290);
   --atom: oklch(0.25 0.02 290);
-  --glow: 0.4;
+  --glow: 0.22;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
