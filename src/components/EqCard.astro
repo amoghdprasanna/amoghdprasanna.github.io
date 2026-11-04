@@ -1,0 +1,47 @@
+---
+// A handwritten equation that opens a small card saying what it means.
+// A native <details>, so it works without JavaScript and with the keyboard.
+import Ink from './Ink.astro';
+import { meanings } from '../data/equations';
+interface Props { name: string; label: string; class?: string; scale?: number }
+const { name, label, class: cls, scale } = Astro.props;
+const m = meanings[name];
+---
+{m ? (
+  <details class="eqcard">
+    <summary aria-label={`${label} Show what it says.`}>
+      <Ink name={name} label={label} class={cls} scale={scale} />
+      <span class="hint mono" aria-hidden="true">what it says</span>
+    </summary>
+    <div class="card mono-plain">
+      <span class="c tl" aria-hidden="true">┌</span><span class="c tr" aria-hidden="true">┐</span>
+      <span class="c bl" aria-hidden="true">└</span><span class="c br" aria-hidden="true">┘</span>
+      <p class="title">{m.title}</p>
+      <p>{m.text}</p>
+    </div>
+  </details>
+) : <Ink name={name} label={label} class={cls} scale={scale} />}
+
+<style>
+  .eqcard { width: 100%; max-width: 100%; }
+  summary { list-style: none; cursor: pointer; display: block; border-radius: 3px; }
+  summary::-webkit-details-marker { display: none; }
+  .hint {
+    display: inline-block; margin-top: 0.2rem; font-size: var(--step--2); color: var(--faint);
+    opacity: 0; transition: opacity 0.2s, color 0.2s;
+  }
+  .hint::after { content: ' ⌄'; }
+  summary:hover .hint, summary:focus-visible .hint, .eqcard[open] .hint { opacity: 1; }
+  summary:hover .hint { color: var(--accent); }
+  .eqcard[open] .hint::after { content: ' ⌃'; }
+  /* No hover on touch screens, so keep the hint visible there. */
+  @media (hover: none) { .hint { opacity: 1; } }
+  .card {
+    position: relative; margin-top: 0.5rem; padding: 0.8rem 1rem; max-width: 28rem;
+    text-align: left; font-size: var(--step--1); line-height: 1.55; color: var(--fg);
+  }
+  .card .title { color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; font-size: var(--step--2); margin-bottom: 0.3rem; }
+  .c { position: absolute; color: var(--faint); font: 400 1rem/1 var(--mono); }
+  .tl { top: 0; left: 0; } .tr { top: 0; right: 0; } .bl { bottom: 0; left: 0; } .br { bottom: 0; right: 0; }
+  @media print { .hint, .card { display: none; } }
+</style>

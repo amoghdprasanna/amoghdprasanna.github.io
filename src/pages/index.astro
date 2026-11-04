@@ -7,6 +7,7 @@ import ResearchEntry from '../components/ResearchEntry.astro';
 import Publication from '../components/Publication.astro';
 import Beyond from '../components/Beyond.astro';
 import Ink from '../components/Ink.astro';
+import EqCard from '../components/EqCard.astro';
 import Note from '../components/Note.astro';
 import Todo from '../components/Todo.astro';
 import { site } from '../site';
@@ -54,12 +55,12 @@ const jsonLd = {
   <Section id="interests" num="01" title="Research interests">
     <div slot="aside" class="aside-inks no-print">
       <div>
-        <Ink name="eq-gkp" scale={0.068} label="Handwritten: S q equals e to the i 2 root pi p hat, S p equals e to the i 2 root pi q hat, the GKP code's stabilizers." />
+        <EqCard name="eq-gkp" scale={0.068} label="Handwritten: S q equals e to the i 2 root pi p hat, S p equals e to the i 2 root pi q hat, the GKP code's stabilizers." />
         <Ink name="note-oscillator" class="cap" scale={0.05} label="a qubit inside an oscillator" />
       </div>
-      <Ink name="eq-trotter" scale={0.06} label="Handwritten: e to the minus i H t is approximately the product over k of e to the minus i H k t over n, all to the n, a Trotter step." />
+      <EqCard name="eq-trotter" scale={0.06} label="Handwritten: e to the minus i H t is approximately the product over k of e to the minus i H k t over n, all to the n, a Trotter step." />
       <div>
-        <Ink name="eq-bpp" scale={0.066} label="Handwritten: BPP is contained in BQP, which is contained in PP." />
+        <EqCard name="eq-bpp" scale={0.066} label="Handwritten: BPP is contained in BQP, which is contained in PP." />
         <Ink name="note-line" class="cap" scale={0.062} label="where the line sits" />
       </div>
     </div>

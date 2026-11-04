@@ -1,6 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import Ink from './Ink.astro';
+import EqCard from './EqCard.astro';
 import Note from './Note.astro';
 import { handFor } from '../data/hand';
 interface Props { entry: CollectionEntry<'research'> }
@@ -24,7 +25,7 @@ const capInk = d.inkLabel && handFor(d.inkLabel);
       <span class="chip">{d.status}</span>
     )}
     {d.metric && <span class="chip">{d.status}</span>}
-    {d.ink && <Ink name={d.ink} label={d.inkAlt ?? `Handwritten, ${d.inkLabel ?? 'from my notes'}`} class="eq" scale={0.095} />}
+    {d.ink && <EqCard name={d.ink} label={d.inkAlt ?? `Handwritten, ${d.inkLabel ?? 'from my notes'}`} class="eq" scale={0.095} />}
     {d.ink && d.inkLabel && (capInk
       ? <Ink name={capInk} label={d.inkLabel} class="ink-cap-hand" scale={0.075} />
       : <p class="ink-cap mono-plain">{d.inkLabel}</p>)}
