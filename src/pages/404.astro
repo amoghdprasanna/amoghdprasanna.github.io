@@ -1,15 +1,110 @@
 ---
 import Base from '../layouts/Base.astro';
+const MESSAGE = 'this page decohered';
 ---
 <Base title="Not found">
   <div class="wrap nf">
     <p class="mono">404</p>
     <h1>This page decohered.</h1>
-    <p>Nothing was measured at this address. <a href="/">Back to the homepage</a>.</p>
+    <p class="lede">Nothing was measured at this address. <a href="/">Back to the homepage</a>.</p>
+
+    <figure class="rep no-print" data-rep data-message={MESSAGE}>
+      <p class="intro">
+        While you're here: the sentence above, stored the oldest way to fight noise. It is written three times; noise
+        corrupts each character of each copy with probability <i>p</i>, and a majority vote reads it back.
+      </p>
+      <div class="rows mono-plain" aria-hidden="true">
+        <div><span class="k">copy 1</span><span class="t" data-copy="0">{MESSAGE}</span></div>
+        <div><span class="k">copy 2</span><span class="t" data-copy="1">{MESSAGE}</span></div>
+        <div><span class="k">copy 3</span><span class="t" data-copy="2">{MESSAGE}</span></div>
+        <div class="vote"><span class="k">vote</span><span class="t" data-vote>{MESSAGE}</span></div>
+      </div>
+      <div class="controls">
+        <label class="mono-plain">noise <i>p</i> = <b data-p>15%</b>
+          <input type="range" min="0" max="60" step="1" value="15" data-noise aria-describedby="rep-result" />
+        </label>
+        <button class="act mono" type="button" data-again>new noise</button>
+      </div>
+      <p class="result mono-plain" id="rep-result" role="status" aria-live="polite" data-result></p>
+      <figcaption class="mono-plain">
+        A character is lost only if at least two of its three copies are hit, which happens with probability
+        3p² − 2p³: less than p whenever p &lt; 1/2, so the copies help. Past p = 1/2 they make things worse. Quantum
+        codes can't copy states, but they use the same idea, spread over entangled qubits.
+      </figcaption>
+    </figure>
   </div>
 </Base>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-rep]');
+  if (root) {
+    const msg = root.dataset.message!;
+    const copies = [...root.querySelectorAll<HTMLElement>('[data-copy]')];
+    const vote = root.querySelector<HTMLElement>('[data-vote]')!;
+    const slider = root.querySelector<HTMLInputElement>('[data-noise]')!;
+    const pOut = root.querySelector<HTMLElement>('[data-p]')!;
+    const result = root.querySelector<HTMLElement>('[data-result]')!;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    const NOISE = '#%@&*?!$~^=+:;<>/\\|';
+    // A corrupted character becomes a different noise glyph, so two hit copies
+    // almost never agree by accident.
+    const corrupt = (c: string) => { let g; do g = NOISE[Math.floor(Math.random() * NOISE.length)]; while (g === c); return g; };
+    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    let draws: number[][] = []; // one uniform number per character per copy, reused as p moves
+
+    const fresh = () => { draws = copies.map(() => [...msg].map(() => Math.random())); };
+    function render(flicker = false) {
+      const p = +slider.value / 100;
+      pOut.textContent = `${slider.value}%`;
+      const rows = draws.map((d) => [...msg].map((c, i) => (c !== ' ' && d[i] < p ? corrupt(c) : c)));
+      rows.forEach((r, k) => {
+        copies[k].innerHTML = r.map((c, i) => (c === msg[i] ? esc(c) : `<span class="hit">${esc(c)}</span>`)).join('');
+      });
+      let lost = 0, letters = 0;
+      vote.innerHTML = [...msg].map((c, i) => {
+        if (c === ' ') return ' ';
+        letters++;
+        const [a, b, d] = rows.map((r) => r[i]);
+        const winner = a === b || a === d ? a : b === d ? b : '?';
+        if (winner !== c) lost++;
+        return winner === c ? esc(c) : `<span class="lost">${esc(winner)}</span>`;
+      }).join('');
+      const theory = 3 * p * p - 2 * p * p * p;
+      result.textContent = `${lost} of ${letters} letters lost after the vote (${Math.round((100 * lost) / letters)}%); expected ${(100 * theory).toFixed(1)}% with the vote, ${(100 * p).toFixed(0)}% without.`;
+      if (flicker && !reduce.matches) {
+        root!.classList.remove('flick'); void root!.offsetWidth; root!.classList.add('flick');
+      }
+    }
+    slider.addEventListener('input', () => render());
+    root.querySelector('[data-again]')!.addEventListener('click', () => { fresh(); render(true); });
+    fresh(); render();
+  }
+</script>
+
 <style>
   .nf { padding-block: var(--space-xl); min-height: 50vh; }
   h1 { font-size: var(--step-4); font-weight: 340; margin-block: 0.6rem 1rem; }
-  p:last-child { color: var(--mute); }
+  .lede { color: var(--mute); }
+  .rep { margin-top: var(--space-xl); max-width: 44rem; border-top: 1px solid var(--line); padding-top: var(--space-m); --halo: color-mix(in oklch, var(--accent) calc(var(--glow) * 85%), transparent); }
+  .intro { color: var(--mute); max-width: 60ch; }
+  .rows { margin-top: var(--space-m); display: grid; gap: 0.35rem; font-size: var(--step-0); }
+  .rows div { display: grid; grid-template-columns: 5.5rem 1fr; white-space: pre; overflow-x: auto; }
+  .k { color: var(--faint); font-size: var(--step--1); align-self: center; }
+  .t { color: var(--fg); letter-spacing: 0.04em; }
+  .t :global(.hit) { color: var(--faint); }
+  .vote { margin-top: 0.4rem; padding-top: 0.5rem; border-top: 1px dashed var(--line); }
+  .vote .t { color: var(--accent); text-shadow: 0 0 0.7em var(--halo); }
+  .vote .t :global(.lost) { color: var(--fg); text-shadow: none; text-decoration: underline wavy var(--faint); }
+  .controls { display: flex; flex-wrap: wrap; gap: 0.5rem 1.6rem; align-items: center; margin-top: var(--space-m); }
+  .controls label { display: flex; gap: 0.6rem; align-items: center; }
+  .controls b { color: var(--fg); font-weight: 500; min-width: 3ch; }
+  input[type='range'] { accent-color: var(--accent); width: 12rem; min-height: 2rem; }
+  .act { background: none; border: 0; padding: 0.4rem 0; cursor: pointer; color: var(--fg); border-bottom: 1px dashed var(--faint); }
+  .act:hover { color: var(--accent); border-color: var(--accent); }
+  .result { margin-top: 0.6rem; color: var(--fg); min-height: 2.4em; }
+  figcaption { margin-top: 0.8rem; font-size: var(--step--1); max-width: 64ch; }
+  @media (prefers-reduced-motion: no-preference) {
+    .flick .rows .t { animation: flick 0.35s steps(3); }
+  }
+  @keyframes flick { 0% { opacity: 0.35; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
 </style>
