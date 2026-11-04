@@ -217,7 +217,7 @@ a:hover { text-decoration-color: var(--accent); }
   }
   body { background: #fff; line-height: 1.35; }
   .no-print, nav.site, .site-header, .skip, .hand, .ink, canvas, .hero .side, .software, .before, .readings-teaser,
-  .now, .more, .btn, .bibtex, .tags, .chip,
+  .now, .more, .btn, .bibtex, .tags, .chip, .hero .copy,
   footer .colophon { display: none !important; }
   .wrap { padding: 0; max-width: none; }
   .hero { display: block !important; padding: 0 0 4pt !important; }
@@ -242,7 +242,7 @@ a:hover { text-decoration-color: var(--accent); }
   .entry .summary, .pub p { margin-top: 1pt !important; }
   .entry h3 { margin-top: 1pt; }
   .section, .site-footer, .pub { break-inside: avoid; }
-  .hero .links li:not(:last-child) { display: none; }
+  .hero .links li:not(:has(a[href^='mailto:'])) { display: none !important; }
   .hero .sub, .hero .links { display: inline; }
   .pub { padding-block: 2pt !important; border: 0 !important; display: block !important; }
   .rows li { padding-block: 1pt !important; border: 0 !important; display: grid !important; grid-template-columns: 30mm 1fr !important; gap: 0 6pt !important; }

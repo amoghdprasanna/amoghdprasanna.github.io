@@ -22,7 +22,12 @@ const links = [
       {site.role} at the <strong>{site.affiliation}</strong>, working with Prof. Shabnam Jabeen and, at Fermilab's SQMS Center, Dr. Tanay Roy.
     </p>
     <ul class="links mono" aria-label="Links">
-      {links.map((x) => <li><a href={x.href}>{x.label}</a></li>)}
+      {links.filter((x) => !x.href.startsWith('mailto:')).map((x) => <li><a href={x.href}>{x.label}</a></li>)}
+      <li class="email" data-copy-li>
+        <a href={`mailto:${site.email}`}>{site.email}</a>
+        <button class="copy" type="button" hidden data-copy={site.email} aria-label={`Copy ${site.email} to the clipboard`}>copy</button>
+        <span class="visually-hidden" role="status" aria-live="polite" data-copy-status></span>
+      </li>
     </ul>
   </div>
 
@@ -46,6 +51,25 @@ const links = [
 </header>
 
 <script>
+  // Copy-email button: shown only where the Clipboard API is available, so the
+  // mailto link stays the fallback everywhere else.
+  const li = document.querySelector<HTMLElement>('[data-copy-li]');
+  const btn = li?.querySelector<HTMLButtonElement>('[data-copy]');
+  const status = li?.querySelector<HTMLElement>('[data-copy-status]');
+  if (li && btn && status && navigator.clipboard && isSecureContext) {
+    btn.hidden = false;
+    let timer = 0;
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy!);
+        btn.textContent = 'copied'; status.textContent = 'Email address copied.';
+      } catch {
+        btn.textContent = 'press ⌘C'; status.textContent = 'Copy failed; select the address instead.';
+      }
+      clearTimeout(timer);
+      timer = window.setTimeout(() => { btn.textContent = 'copy'; status.textContent = ''; }, 1800);
+    });
+  }
   import { mountTweezer } from '../scripts/tweezer';
   document.querySelectorAll<HTMLElement>('[data-tweezer]').forEach(mountTweezer);
 </script>
@@ -67,7 +91,13 @@ const links = [
   .links { display: flex; flex-wrap: wrap; gap: 0.55rem 1.3rem; list-style: none; padding: 0; margin-top: 1.9rem; }
   .links a { color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--faint); padding-bottom: 2px; }
   .links a:hover { border-color: var(--accent); }
-  .links li:last-child a { text-transform: none; letter-spacing: 0.02em; }
+  .links a[href^='mailto:'] { text-transform: none; letter-spacing: 0.02em; }
+  .email { display: inline-flex; gap: 0.6rem; align-items: baseline; white-space: nowrap; }
+  .copy {
+    background: none; border: 0; padding: 0 0 2px; cursor: pointer; color: var(--mute);
+    font: inherit; letter-spacing: inherit; text-transform: inherit; border-bottom: 1px dashed var(--faint);
+  }
+  .copy:hover { color: var(--fg); border-color: var(--accent); }
 
   .side { position: relative; }
   .tweezer { position: relative; margin: 0; }
