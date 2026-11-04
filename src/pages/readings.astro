@@ -15,11 +15,11 @@ const slug = (s: string) => s.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-
 type Entry = CollectionEntry<'readings'>;
 ---
 
-<Base title="Readings & resources" description="An annotated shelf of what shaped how I think about quantum computing and research, and the tools my research is built on.">
+<Base title="Readings & resources" description="An annotated shelf of what shaped how I think about quantum computing and research, and tools and courses worth knowing.">
   <div class="wrap page">
     <p class="crumb mono"><a href="/">← Home</a></p>
     <h1>Readings <span class="amp">&amp;</span> resources</h1>
-    <p class="lede">What shaped how I think about quantum computing and about doing research, one line each on what I took from it. Below that, the tools my research is built on.</p>
+    <p class="lede">What shaped how I think about quantum computing and about doing research, one line each on what I took from it. Below that, tools and courses worth knowing.</p>
     <nav class="jump mono" aria-label="On this page">
       <a href="#readings">Readings</a>
       {resources.length > 0 && <a href="#resources">Resources</a>}
@@ -53,7 +53,7 @@ type Entry = CollectionEntry<'readings'>;
     {resources.length > 0 && (
       <section id="resources" class="part" aria-labelledby="resources-h">
         <h2 id="resources-h">Resources</h2>
-        <p class="intro">The open-source tools my research is built on.</p>
+        <p class="intro">Tools I use or that are worth knowing, and good places to learn the field.</p>
         {resources.map(({ topic, items }) => (
           <section class="topic" aria-labelledby={`t-${slug(topic)}`}>
             <h3 id={`t-${slug(topic)}`} class="mono">{topic}</h3>

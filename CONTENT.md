@@ -90,8 +90,9 @@ order: 5
 ---
 ```
 
-Topics: readings use `Quantum computing & complexity` or `Doing research`;
-resources use `Software & simulation`. Add a topic in
+Topics: readings use `Quantum error correction`, `Quantum computing &
+complexity` or `Doing research`; resources use `Software & simulation` or
+`Learning`. Add a topic in
 `src/content.config.ts` (`readingTopics` / `resourceTopics`); empty topics are
 hidden. Leave `status` out unless it's true: no label is shown without it.
 

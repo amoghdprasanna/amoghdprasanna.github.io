@@ -67,8 +67,8 @@ const software = defineCollection({
 // One collection for the shelf (things read or followed, with a takeaway) and
 // for resources (tools and references worth pointing people to). `status` is
 // left out unless it's actually known.
-export const readingTopics = ['Quantum computing & complexity', 'Doing research'] as const;
-export const resourceTopics = ['Software & simulation'] as const;
+export const readingTopics = ['Quantum error correction', 'Quantum computing & complexity', 'Doing research'] as const;
+export const resourceTopics = ['Software & simulation', 'Learning'] as const;
 
 const readings = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/readings' }),
