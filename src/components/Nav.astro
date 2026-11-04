@@ -11,7 +11,7 @@ const path = Astro.url.pathname;
 
 <header class="site-header">
   <nav class="site wrap" aria-label="Primary">
-    <a class="me mono" href="/" aria-label="Amogh D. Prasanna, home"><i aria-hidden="true"></i>A. D. Prasanna</a>
+    <a class="me mono" href="/" aria-label="Amogh D. Prasanna, home"><i aria-hidden="true"></i>Amogh D. Prasanna</a>
     <ul class="links mono">
       {items.map((i) => (
         <li><a href={i.href} aria-current={path === i.href ? 'page' : undefined}>{i.label}</a></li>
