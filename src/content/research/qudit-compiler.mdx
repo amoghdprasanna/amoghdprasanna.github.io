@@ -14,6 +14,7 @@ inkLabel: the objective, leakage included
 
 import Figure from '../../components/Figure.astro';
 import Todo from '../../components/Todo.astro';
+import QuditLadder from '../../components/QuditLadder.astro';
 
 ## Motivation
 
@@ -29,6 +30,10 @@ H = \omega_c\, a^\dagger a + \sum_j \omega_j \lvert j\rangle\langle j\rvert + g\
 $$
 
 where the uneven spacing of the $\omega_j$ is the anharmonicity. Together with drives on the transmon, this interaction is universal for controlling the joint system. I train models to choose sequences of these native operations for a target $U \in \mathrm{SU}(d)$, and the training objective scores the whole sequence, including how much population leaves the computational subspace along the way. Every learned decomposition is benchmarked against analytic baselines on the same targets.
+
+The ladder below is the simplest version of that trade-off. Each pulse is tuned to one transition, but a fast pulse is spectrally broad, so it also drives the transitions next to it, which sit only α away. Slide the pulse length down and watch population leak out of the qudit.
+
+<QuditLadder />
 
 ## Results
 

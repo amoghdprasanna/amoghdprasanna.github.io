@@ -1,0 +1,191 @@
+---
+// The qudit ladder: a five-level transmon driven one transition at a time,
+// simulated in the browser (src/scripts/transmon.ts). Populations only.
+const LEVELS = 5;
+// Rung heights from E_k = k + (a/w) k(k-1)/2 with the anharmonicity exaggerated
+// (a/w = -0.12 here, about -0.04 on hardware) so the shrinking gaps are visible.
+const E = Array.from({ length: LEVELS }, (_, k) => k - (0.12 * k * (k - 1)) / 2);
+const top = (k: number) => 100 - (E[k] / E[LEVELS - 1]) * 100;
+---
+
+<figure class="ladder no-print" data-ladder>
+  <div class="frame">
+    <span class="corner tl" aria-hidden="true">┌</span><span class="corner tr" aria-hidden="true">┐</span>
+    <span class="corner bl" aria-hidden="true">└</span><span class="corner br" aria-hidden="true">┘</span>
+    <div class="levels mono-plain" role="img" aria-label="Energy levels of the transmon with the population of each" data-levels>
+      {Array.from({ length: LEVELS }, (_, i) => LEVELS - 1 - i).map((k) => (
+        <div class:list={['rung', { leak: k === LEVELS - 1 }]} style={`top: ${top(k)}%`} data-rung={k}>
+          <span class="ket">|{k}⟩</span>
+          <span class="line" aria-hidden="true">{(k === LEVELS - 1 ? '┄' : '─').repeat(10)}</span>
+          <span class="bar" aria-hidden="true" data-bar></span>
+          <span class="pct" data-pct>{k === 0 ? '100.0%' : '0.0%'}</span>
+        </div>
+      ))}
+      <span class="drive" aria-hidden="true" data-drive hidden>↕</span>
+    </div>
+  </div>
+
+  <div class="side">
+    <p class="seq mono-plain" aria-label="The sequence, applied right to left" data-seq></p>
+    <div class="row" role="group" aria-label="Target">
+      <button class="act mono" type="button" data-target="climb" aria-pressed="true">climb to |3⟩</button>
+      <button class="act mono" type="button" data-target="spread" aria-pressed="false">equal superposition</button>
+    </div>
+    <label class="len mono-plain">
+      <span>pulse length <b data-ns>12 ns</b></span>
+      <input type="range" min="2" max="40" step="1" value="12" data-len />
+    </label>
+    <div class="row">
+      <button class="act mono" type="button" data-step>next pulse</button>
+      <button class="act mono" type="button" data-all>run all</button>
+      <button class="act mono" type="button" data-reset>reset</button>
+    </div>
+    <dl class="read mono-plain">
+      <div><dt>outside the qudit, |4⟩</dt><dd data-leak>0.00%</dd></div>
+      <div><dt>off target</dt><dd data-off>0.00%</dd></div>
+    </dl>
+    <p class="status mono-plain" role="status" aria-live="polite" data-status>Start in |0⟩. Apply the pulses one at a time.</p>
+  </div>
+
+  <figcaption class="mono-plain">
+    Simulated, and not my compiler: a five-level transmon (|0⟩ to |3⟩ hold the qudit, |4⟩ is outside it) with
+    anharmonicity α/2π = −200 MHz, driven by square pulses resonant with one transition at a time, in the
+    rotating-wave approximation, with no decoherence and no pulse shaping; level spacings are drawn exaggerated. Any qudit unitary can be built from
+    rotations between neighbouring levels like these, plus phases; only populations are shown. A short pulse is
+    spectrally broad, so it also drives the neighbouring transitions, detuned by α: that is the leakage into |4⟩ and
+    the crosstalk between levels. Shaped pulses such as DRAG suppress it on hardware. "Off target" is half the summed
+    difference from the ideal populations.
+  </figcaption>
+</figure>
+
+<script>
+  import { pulse, ground, ideal, targets, fromNs, LEVELS, type Amp } from '../scripts/transmon';
+
+  const SUB = '₀₁₂₃₄';
+  const angle = (t: number) => {
+    const named: [number, string][] = [[Math.PI, 'π'], [Math.PI / 2, 'π/2'], [(2 * Math.PI) / 3, '2π/3']];
+    return named.find(([v]) => Math.abs(v - t) < 1e-9)?.[1] ?? t.toFixed(2);
+  };
+  const pct = (x: number) => `${(100 * x).toFixed(x < 0.001 ? 2 : 1)}%`;
+  const BLOCKS = ' ▏▎▍▌▋▊▉█';
+  const bar = (x: number, w = 16) => {
+    const units = Math.round(Math.max(0, Math.min(1, x)) * w * 8);
+    return '█'.repeat(Math.floor(units / 8)) + (units % 8 ? BLOCKS[units % 8] : '');
+  };
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-ladder]')) {
+    const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
+    const rungs = new Map([...root.querySelectorAll<HTMLElement>('[data-rung]')].map((el) => [+el.dataset.rung!, el]));
+    const drive = $<HTMLElement>('[data-drive]'), seqEl = $<HTMLElement>('[data-seq]');
+    const len = $<HTMLInputElement>('[data-len]'), nsEl = $<HTMLElement>('[data-ns]');
+    const stepBtn = $<HTMLButtonElement>('[data-step]'), allBtn = $<HTMLButtonElement>('[data-all]');
+    const status = $<HTMLElement>('[data-status]');
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+
+    let target: keyof typeof targets = 'climb';
+    let psi: Amp = ground(), done = 0, busy = false;
+    const seq = () => targets[target].seq;
+
+    function show(pop: number[], active = -1) {
+      for (const [k, el] of rungs) {
+        el.querySelector('[data-bar]')!.textContent = bar(pop[k]);
+        el.querySelector('[data-pct]')!.textContent = pct(pop[k]);
+        el.classList.toggle('lit', pop[k] > 0.005);
+      }
+      if (active >= 0) {
+        const a = rungs.get(active)!, b = rungs.get(active + 1)!;
+        drive.style.top = `${(parseFloat(a.style.top) + parseFloat(b.style.top)) / 2}%`;
+        drive.hidden = false;
+      } else drive.hidden = true;
+      // Sequence written as U = U_N ... U_1: applied factors solid, the next one lit, the rest faint.
+      const s = seq();
+      seqEl.innerHTML = 'U = ' + s.map((p, i) => ({ p, i })).reverse().map(({ p, i }) =>
+        `<span class="${i < done ? 'done' : i === done ? 'next' : 'todo'}">R${SUB[p.j]}${SUB[p.j + 1]}(${angle(p.theta)})</span>`).join(' · ');
+      const ideals = ideal(s.slice(0, done));
+      const off = 0.5 * pop.reduce((a, x, k) => a + Math.abs(x - ideals[k]), 0);
+      $<HTMLElement>('[data-leak]').textContent = pct(pop[LEVELS - 1]);
+      $<HTMLElement>('[data-off]').textContent = pct(off);
+      stepBtn.disabled = allBtn.disabled = busy || done >= s.length;
+    }
+    const pops = () => psi.map((c) => c.re * c.re + c.im * c.im);
+
+    function apply(): Promise<void> {
+      const p = seq()[done];
+      const { psi: next, trace } = pulse(psi, p, fromNs(+len.value));
+      return new Promise((res) => {
+        const finish = () => {
+          psi = next; done++; busy = false;
+          const s = seq(), pop = pops();
+          show(pop);
+          status.textContent = done < s.length
+            ? `Pulse ${done} of ${s.length} applied.`
+            : `Done. ${pct(pop[LEVELS - 1])} leaked out of the qudit into |4⟩; ${$<HTMLElement>('[data-off]').textContent} of the population is off target.`;
+          res();
+        };
+        busy = true;
+        if (reduce.matches) return finish();
+        const t0 = performance.now(), dur = 700;
+        const tick = (now: number) => {
+          const f = Math.min(1, (now - t0) / dur);
+          show(trace[Math.min(trace.length - 1, Math.floor(f * (trace.length - 1)))], p.j);
+          if (f < 1) requestAnimationFrame(tick); else finish();
+        };
+        requestAnimationFrame(tick);
+      });
+    }
+    function reset(msg = 'Start in |0⟩. Apply the pulses one at a time.') {
+      psi = ground(); done = 0; busy = false; show(pops()); status.textContent = msg;
+    }
+
+    stepBtn.addEventListener('click', () => { if (!busy) apply(); });
+    allBtn.addEventListener('click', async () => { while (!busy && done < seq().length) await apply(); });
+    $<HTMLButtonElement>('[data-reset]').addEventListener('click', () => reset());
+    root.querySelectorAll<HTMLButtonElement>('[data-target]').forEach((b) => b.addEventListener('click', () => {
+      if (busy) return;
+      target = b.dataset.target as keyof typeof targets;
+      root.querySelectorAll('[data-target]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      reset(`Target: ${targets[target].label}. Start in |0⟩.`);
+    }));
+    len.addEventListener('input', () => {
+      nsEl.textContent = `${len.value} ns`;
+      len.setAttribute('aria-valuetext', `${len.value} nanoseconds`);
+      if (!busy && done > 0) reset(`Pulse length ${len.value} ns. Start again from |0⟩.`);
+    });
+    show(pops());
+  }
+</script>
+
+<style>
+  .ladder { margin: var(--space-l) 0; padding: var(--space-m) 0; border-block: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: var(--space-m) var(--space-l); }
+  .frame { position: relative; padding: 0.9rem 0.7rem; flex: 1 1 22rem; max-width: 30rem; }
+  .corner { position: absolute; color: var(--faint); font: 400 1rem/1 var(--mono); }
+  .tl { top: 0; left: 0; } .tr { top: 0; right: 0; } .bl { bottom: 0; left: 0; } .br { bottom: 0; right: 0; }
+  .levels { --halo: color-mix(in oklch, var(--accent) calc(var(--glow) * 85%), transparent); position: relative; height: 15rem; margin: 0.6rem 0 0.8rem; }
+  .rung { position: absolute; left: 0; right: 0; transform: translateY(-50%); display: grid; grid-template-columns: 2.6em auto 1fr 4.2em; gap: 0.6em; align-items: center; white-space: nowrap; }
+  .ket { color: var(--mute); }
+  .line { color: var(--fg); letter-spacing: -0.05em; }
+  .leak .line, .leak .ket { color: var(--faint); }
+  .bar { color: var(--accent); overflow: hidden; text-shadow: 0 0 0.8em var(--halo); }
+  .leak .bar { color: var(--fg); text-shadow: none; }
+  .pct { text-align: right; color: var(--mute); font-variant-numeric: tabular-nums; }
+  .rung.lit .ket, .rung.lit .pct { color: var(--fg); }
+  .leak.lit .pct { color: var(--accent); }
+  .drive { position: absolute; left: 6.6em; transform: translateY(-50%); color: var(--accent); font-size: 1.3em; text-shadow: 0 0 0.6em var(--halo), 0 0 1.4em var(--halo); }
+  .side { display: grid; gap: 0.9rem; flex: 1 1 16rem; align-content: start; max-width: 28rem; }
+  .seq { color: var(--mute); line-height: 1.6; }
+  .seq :global(.done) { color: var(--fg); }
+  .seq :global(.next) { color: var(--accent); }
+  .seq :global(.todo) { color: var(--faint); }
+  .row { display: flex; flex-wrap: wrap; gap: 0.3rem 1.3rem; }
+  .act { background: none; border: 0; padding: 0.4rem 0; cursor: pointer; color: var(--mute); border-bottom: 1px dashed var(--faint); }
+  .act:hover:not(:disabled), .act[aria-pressed='true'] { color: var(--fg); border-color: var(--accent); }
+  .act:disabled { color: var(--faint); cursor: default; }
+  .len { display: grid; gap: 0.3rem; }
+  .len b { color: var(--fg); font-weight: 500; }
+  input[type='range'] { accent-color: var(--accent); width: 100%; max-width: 18rem; min-height: 2rem; }
+  .read { display: grid; gap: 0.2rem; }
+  .read div { display: flex; justify-content: space-between; max-width: 18rem; }
+  .read dd { color: var(--fg); font-variant-numeric: tabular-nums; }
+  .status { color: var(--fg); min-height: 3em; }
+  figcaption { flex-basis: 100%; font-size: var(--step--1); max-width: 70ch; }
+</style>
