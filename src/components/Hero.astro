@@ -16,8 +16,8 @@ const links = [
 
 <header class="hero wrap">
   <div class="text">
-    <p class="name">Amogh D. Prasanna</p>
-    <h1>Teaching noisy quantum hardware to compute <em>correctly.</em></h1>
+    <h1 class="name">Amogh D. Prasanna</h1>
+    <p class="tagline">Teaching noisy quantum hardware to compute <em>correctly.</em></p>
     <p class="sub">
       {site.role} at the <strong>{site.affiliation}</strong>, working with Prof. Shabnam Jabeen and, at Fermilab's SQMS Center, Dr. Tanay Roy.
     </p>
@@ -80,12 +80,15 @@ const links = [
     gap: var(--space-l); align-items: center;
     padding-block: clamp(2.5rem, 7vw, 6.5rem) var(--space-xl);
   }
-  .name { font-size: var(--step-1); font-weight: 500; margin-bottom: 1.1rem; }
-  h1 {
+  .name {
     font-size: var(--step-4); line-height: 1.03; font-weight: 340; letter-spacing: -0.025em;
     text-wrap: balance;
   }
-  h1 em { font-style: italic; color: var(--accent); font-weight: 360; }
+  .tagline {
+    font-size: var(--step-2); line-height: 1.25; font-weight: 340; letter-spacing: -0.01em;
+    color: var(--mute); margin-top: 1rem; max-width: 24ch; text-wrap: balance;
+  }
+  .tagline em { font-style: italic; color: var(--accent); font-weight: 360; }
   .sub { max-width: 54ch; color: var(--mute); margin-top: 1.6rem; text-wrap: pretty; }
   .sub strong { color: var(--fg); font-weight: 500; }
   .links { display: flex; flex-wrap: wrap; gap: 0.55rem 1.3rem; list-style: none; padding: 0; margin-top: 1.9rem; }
@@ -120,8 +123,8 @@ const links = [
   @media (max-width: 52rem) {
     .hero { grid-template-columns: minmax(0, 1fr); gap: 0; padding-top: 1.75rem; }
     .text { display: contents; }
-    .name { order: 1; margin-bottom: 0.6rem; }
-    h1 { order: 2; }
+    .name { order: 1; }
+    .tagline { order: 2; margin-top: 0.6rem; }
     .side { order: 3; max-width: 30rem; margin-top: 1.25rem; }
     .sub { order: 4; }
     .links { order: 5; }

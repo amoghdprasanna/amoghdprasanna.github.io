@@ -221,8 +221,8 @@ a:hover { text-decoration-color: var(--accent); }
   footer .colophon { display: none !important; }
   .wrap { padding: 0; max-width: none; }
   .hero { display: block !important; padding: 0 0 4pt !important; }
-  .hero h1 { font-size: 15pt !important; margin-top: 1pt; }
-  .hero .name { font-size: 11pt; margin: 0; font-weight: 600; }
+  .hero .name { font-size: 15pt !important; margin: 0; font-weight: 500; }
+  .hero .tagline { font-size: 9.5pt; margin-top: 1pt; max-width: none; }
   .hero .sub { margin-top: 3pt; max-width: none; }
   .hero .links { margin-top: 3pt; gap: 2pt 10pt; }
   .section { display: grid; grid-template-columns: 22mm 1fr; gap: 6pt; padding-block: 4pt; border-top: 0.5pt solid #ccc; }
