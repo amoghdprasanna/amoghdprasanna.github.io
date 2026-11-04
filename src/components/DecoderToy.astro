@@ -1,0 +1,169 @@
+---
+// A distance-5 surface code you can break and decode, drawn as a character
+// grid. Data qubits are buttons; Z checks light up when an X error flips them;
+// "decode" runs an exact minimum-weight matching (src/scripts/surface.ts).
+// A teaching toy: X errors only, perfect measurements.
+const D = 5, N = 2 * D + 1;
+type Cell = { kind: 'data'; i: number; j: number } | { kind: 'check'; u: number; v: number } | { kind: 'h' | 'v' | 'edge' | 'blank' };
+const cells: Cell[] = [];
+for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+  const ox = x % 2 === 1, oy = y % 2 === 1;
+  if (ox && oy) cells.push({ kind: 'data', i: (x - 1) / 2, j: (y - 1) / 2 });
+  else if (!ox && oy) cells.push({ kind: x === 0 || x === N - 1 ? 'edge' : 'h' });
+  else if (ox && !oy) cells.push({ kind: y === 0 || y === N - 1 ? 'blank' : 'v' });
+  else {
+    const u = x / 2, v = y / 2;
+    const bulk = u >= 1 && u <= D - 1 && v >= 1 && v <= D - 1, edge = (v === 0 || v === D) && u >= 1 && u <= D - 1;
+    cells.push((bulk || edge) && (u + v) % 2 === 0 ? { kind: 'check', u, v } : { kind: 'blank' });
+  }
+}
+---
+
+<figure class="toy no-print" data-toy>
+  <div class="board">
+    <div class="frame">
+    <span class="corner tl" aria-hidden="true">┌</span><span class="corner tr" aria-hidden="true">┐</span>
+    <span class="corner bl" aria-hidden="true">└</span><span class="corner br" aria-hidden="true">┘</span>
+    <div class="grid mono-plain" role="group" aria-label="Distance-5 surface code. Each data qubit is a button: press it to add or remove an X error.">
+      {cells.map((c) =>
+        c.kind === 'data' ? <button type="button" class="q" data-q={`${c.i},${c.j}`} aria-pressed="false" aria-label={`Qubit ${c.i + 1}, ${c.j + 1}`}>•</button>
+        : c.kind === 'check' ? <span class="z" data-z={`${c.u},${c.v}`} aria-hidden="true">·</span>
+        : c.kind === 'h' ? <span class="ln" aria-hidden="true">┄</span>
+        : c.kind === 'v' ? <span class="ln" aria-hidden="true">┆</span>
+        : c.kind === 'edge' ? <span class="edge" aria-hidden="true">│</span>
+        : <span aria-hidden="true"></span>)}
+    </div>
+    </div>
+
+    <div class="side">
+      <dl class="key mono-plain">
+        <div><dt>•</dt><dd>data qubit</dd></div>
+        <div><dt class="err">X</dt><dd>X error, yours</dd></div>
+        <div><dt class="hit">●</dt><dd>check that fired (○ once decoded)</dd></div>
+        <div><dt class="fix">x</dt><dd>decoder's correction</dd></div>
+        <div><dt class="edge">│</dt><dd>edge where an error chain can end</dd></div>
+      </dl>
+      <div class="actions">
+        <button class="act mono" type="button" data-decode disabled>decode</button>
+        <button class="act mono" type="button" data-clear disabled>clear</button>
+      </div>
+      <p class="status mono-plain" role="status" aria-live="polite" data-status>Press a few qubits to add X errors.</p>
+    </div>
+  </div>
+  <figcaption class="mono-plain">
+    A toy, not my research code: a distance-5 rotated surface code with X errors only and perfect measurements,
+    decoded by exact minimum-weight matching. Any two errors are always corrected; some sets of three are not.
+  </figcaption>
+</figure>
+
+<script>
+  import { surfaceCode, key, type Q } from '../scripts/surface';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-toy]')) {
+    const code = surfaceCode(5);
+    const qs = [...root.querySelectorAll<HTMLButtonElement>('[data-q]')];
+    const zs = new Map([...root.querySelectorAll<HTMLElement>('[data-z]')].map((el) => [el.dataset.z!, el]));
+    const decodeBtn = root.querySelector<HTMLButtonElement>('[data-decode]')!;
+    const clearBtn = root.querySelector<HTMLButtonElement>('[data-clear]')!;
+    const status = root.querySelector<HTMLElement>('[data-status]')!;
+    const errors = new Set<string>();
+    let fix: Set<string> | null = null;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    let reveal = 0;
+    const parse = (k: string) => k.split(',').map(Number) as unknown as Q;
+    const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`;
+
+    function render(message?: string) {
+      const fired = new Set(code.syndrome([...errors].map(parse)).map((k) => key(code.checks[k])));
+      for (const b of qs) {
+        const k = b.dataset.q!, e = errors.has(k), f = fix?.has(k) ?? false;
+        b.textContent = e ? 'X' : f ? 'x' : '•';
+        b.className = `q${e ? ' err' : ''}${f ? ' fix' : ''}`;
+        b.setAttribute('aria-pressed', String(e));
+        const [i, j] = parse(k);
+        b.setAttribute('aria-label', `Qubit ${i + 1}, ${j + 1}${e ? ', X error' : ''}${f ? ', corrected by the decoder' : ''}`);
+      }
+      // After decoding, the checks it answered are drawn hollow: seen and resolved.
+      for (const [k, el] of zs) { const on = fired.has(k); el.textContent = on ? (fix ? '○' : '●') : '·'; el.classList.toggle('hit', on); }
+      decodeBtn.disabled = fired.size === 0 || fix !== null;
+      clearBtn.disabled = errors.size === 0;
+      status.textContent = message ?? (errors.size === 0
+        ? 'Press a few qubits to add X errors.'
+        : fired.size > 0 ? `${plural(errors.size, 'error')}, ${plural(fired.size, 'check')} fired. Press decode.`
+        : code.flipsLogical(errors) ? `${plural(errors.size, 'error')} and no check fired: they run edge to edge, a logical X that no check can see.`
+        : `${plural(errors.size, 'error')} and no check fired: together they form a stabilizer, which leaves the stored qubit unchanged.`);
+    }
+
+    qs.forEach((b) => b.addEventListener('click', () => {
+      const k = b.dataset.q!;
+      if (errors.has(k)) errors.delete(k); else errors.add(k);
+      clearInterval(reveal); fix = null; render();
+    }));
+    decodeBtn.addEventListener('click', () => {
+      const defects = code.syndrome([...errors].map(parse));
+      const result = code.decode(defects);
+      const all = [...result.correction];
+      const residual = new Set(errors);
+      for (const k of all) if (residual.has(k)) residual.delete(k); else residual.add(k);
+      const failed = code.flipsLogical(residual);
+      const message = failed
+        ? `Decoder fooled. Its correction plus your errors run edge to edge: a logical X, so the stored qubit is flipped.`
+        : `Corrected. The decoder applied X to ${plural(all.length, 'qubit')}; together with your errors that makes a stabilizer, so the stored qubit is intact.`;
+      // The correction goes down one qubit at a time, then the verdict.
+      clearInterval(reveal);
+      if (reduce.matches || all.length === 0) { fix = new Set(all); render(message); return; }
+      fix = new Set(); decodeBtn.disabled = true;
+      let n = 0;
+      reveal = window.setInterval(() => {
+        fix!.add(all[n++]);
+        if (n < all.length) render('Decoding…'); else { clearInterval(reveal); render(message); }
+      }, 140);
+    });
+    clearBtn.addEventListener('click', () => { clearInterval(reveal); errors.clear(); fix = null; render(); });
+    render();
+  }
+</script>
+
+<style>
+  .toy { margin: var(--space-l) 0; padding: var(--space-m) 0; border-block: 1px solid var(--line); }
+  .board { display: flex; flex-wrap: wrap; gap: var(--space-m) var(--space-l); align-items: flex-start; }
+  .frame { position: relative; padding: 0.6rem; flex: none; }
+  .corner { position: absolute; color: var(--faint); font: 400 1rem/1 var(--mono); }
+  .tl { top: 0; left: 0; } .tr { top: 0; right: 0; } .bl { bottom: 0; left: 0; } .br { bottom: 0; right: 0; }
+  .grid {
+    --cell: min(1.75rem, calc((100vw - 3.5rem) / 11));
+    --halo: color-mix(in oklch, var(--accent) calc(var(--glow) * 85%), transparent);
+    display: grid; grid-template-columns: repeat(11, var(--cell)); grid-auto-rows: var(--cell);
+    font-size: calc(var(--cell) * 0.62); line-height: 1;
+  }
+  .grid > * { display: grid; place-items: center; }
+  .ln { color: var(--faint); opacity: 0.7; }
+  .edge { color: var(--mute); }
+  .z { color: var(--faint); transition: color 0.2s; }
+  .z.hit { color: var(--accent); text-shadow: 0 0 0.6em var(--halo), 0 0 1.4em var(--halo); }
+  .q {
+    width: 100%; height: 100%; padding: 0; border: 0; border-radius: 50%; background: none;
+    font: inherit; color: var(--mute); cursor: pointer; transition: color 0.2s;
+  }
+  .q:hover { color: var(--fg); background: var(--accent-soft); }
+  .q.err { color: var(--atom); font-weight: 700; text-shadow: 0 0 0.8em var(--halo); }
+  .q.fix { color: var(--accent); font-weight: 700; text-shadow: 0 0 0.6em var(--halo), 0 0 1.4em var(--halo); }
+  .q.err.fix { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+  .side { display: grid; gap: 1rem; flex: 1 1 15rem; max-width: 26rem; }
+  .key { display: grid; gap: 0.25rem; font-size: var(--step--1); }
+  .key div { display: grid; grid-template-columns: 1.5rem 1fr; }
+  .key dt { color: var(--mute); text-align: center; }
+  .key dd { color: var(--mute); }
+  .key .err { color: var(--atom); font-weight: 700; }
+  .key .hit, .key .fix { color: var(--accent); font-weight: 700; text-shadow: 0 0 0.6em color-mix(in oklch, var(--accent) calc(var(--glow) * 85%), transparent); }
+  .key .edge { color: var(--mute); }
+  .actions { display: flex; gap: 1.4rem; }
+  .act {
+    background: none; border: 0; padding: 0.4rem 0; cursor: pointer; color: var(--fg);
+    border-bottom: 1px dashed var(--faint);
+  }
+  .act:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .act:disabled { color: var(--faint); cursor: default; }
+  .status { font-size: var(--step--1); min-height: 3.2em; color: var(--fg); max-width: 40ch; }
+  figcaption { margin-top: var(--space-m); font-size: var(--step--1); max-width: 62ch; }
+</style>

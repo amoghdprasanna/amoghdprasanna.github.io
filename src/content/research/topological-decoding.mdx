@@ -12,10 +12,15 @@ links: []
 ---
 
 import Todo from '../../components/Todo.astro';
+import DecoderToy from '../../components/DecoderToy.astro';
 
 ## Motivation
 
 A topological code only protects information if something can read its syndromes and decide what went wrong, fast enough and accurately enough. Decoders are where the theory of a code meets its cost in practice.
+
+Here is the problem a decoder solves, small enough to play with. Add a few X errors: the checks around them fire, but the checks only show where error chains *end*, not where they ran. The decoder has to guess the most likely chains from those endpoints. Usually it guesses right; occasionally its guess plus your errors stretch across the code, and the stored qubit is silently flipped.
+
+<DecoderToy />
 
 ## Approach
 
