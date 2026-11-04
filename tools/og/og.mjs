@@ -1,7 +1,7 @@
 // Renders public/og.png (1200x630) from the running site's hero, so the share
 // image uses the real fonts and the real tweezer array.
-// Usage: npm run build && npx astro preview, then in another shell:
-//   npx -y -p puppeteer-core@23.11.1 node tools/og/og.mjs [chrome path]
+// Usage (see CONTENT.md): npm run build && npx astro preview, then
+//   npm i --no-save puppeteer-core@23.11.1 && node tools/og/og.mjs [chrome path]
 import puppeteer from 'puppeteer-core';
 const chrome = process.argv[2] ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const b = await puppeteer.launch({ executablePath: chrome, headless: true });

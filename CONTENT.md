@@ -129,6 +129,15 @@ Canonical URLs, the sitemap, robots.txt and Open Graph tags all follow `SITE_URL
 
 ## Share image
 
-`public/og.png` is rendered from the live hero. After changing the hero, run
-`npm run build && npx astro preview`, then in another terminal
-`npx -y -p puppeteer-core@23.11.1 node tools/og/og.mjs`.
+`public/og.png` is rendered from the live hero. After changing the hero:
+
+```sh
+npm run build
+npx astro preview                                # starts in the background on :4321
+npm i --no-save puppeteer-core@23.11.1           # once; not added to package.json
+node tools/og/og.mjs                             # writes public/og.png
+npx astro preview stop
+```
+
+It uses your installed Chrome; pass another browser's path as an argument if
+Chrome lives elsewhere.
