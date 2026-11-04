@@ -1,0 +1,101 @@
+---
+// Reading progress for a research page, drawn in characters under the header:
+// ━ for what you've read, ┄ for what's left, and a ◇ per section heading that
+// jumps there. The section marks are real buttons; the line itself is decoration.
+---
+<nav class="readbar no-print" aria-label="Sections on this page" data-readbar hidden>
+  <div class="track mono" aria-hidden="true" data-track></div>
+  <div class="marks" data-marks></div>
+</nav>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-readbar]');
+  const article = document.querySelector<HTMLElement>('article.project');
+  const heads = article ? [...article.querySelectorAll<HTMLElement>('.body h2')] : [];
+  if (bar && article && heads.length > 1) {
+    const track = bar.querySelector<HTMLElement>('[data-track]')!;
+    const marks = bar.querySelector<HTMLElement>('[data-marks]')!;
+    const header = document.querySelector<HTMLElement>('.site-header');
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    bar.hidden = false;
+
+    // One button per section.
+    const buttons = heads.map((h, i) => {
+      if (!h.id) h.id = `s-${i}-${h.textContent!.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, '')}`;
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'mark mono'; b.textContent = '◇';
+      b.setAttribute('aria-label', `Jump to ${h.textContent}`);
+      b.dataset.title = h.textContent!;
+      b.addEventListener('click', () => {
+        h.scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth', block: 'start' });
+        h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true });
+      });
+      marks.append(b);
+      return b;
+    });
+
+    let cw = 8, raf = 0;
+    const measure = () => {
+      const probe = document.createElement('span');
+      probe.className = 'mono'; probe.textContent = '━'.repeat(20);
+      probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre';
+      track.append(probe); cw = probe.getBoundingClientRect().width / 20 || 8; probe.remove();
+    };
+    const range = () => {
+      const top = article.getBoundingClientRect().top + scrollY;
+      return { top, span: Math.max(1, article.offsetHeight - innerHeight) };
+    };
+    function draw() {
+      raf = 0;
+      if (header) bar!.style.top = `${header.offsetHeight}px`;
+      const n = Math.max(10, Math.floor(track.clientWidth / cw));
+      const { top, span } = range();
+      const p = Math.min(1, Math.max(0, (scrollY - top) / span));
+      const filled = Math.round(p * n);
+      track.innerHTML = `<span class="done">${'━'.repeat(filled)}</span>${'┄'.repeat(n - filled)}`;
+      // Each section's mark sits where reading reaches that heading.
+      let current = -1;
+      heads.forEach((h, i) => {
+        const f = Math.min(1, Math.max(0, (h.getBoundingClientRect().top + scrollY - top - innerHeight * 0.25) / span));
+        buttons[i].style.left = `${f * 100}%`;
+        if (h.getBoundingClientRect().top < innerHeight * 0.3) current = i;
+      });
+      buttons.forEach((b, i) => {
+        b.textContent = i <= current ? '◆' : '◇';
+        b.classList.toggle('on', i === current);
+        if (i === current) b.setAttribute('aria-current', 'location'); else b.removeAttribute('aria-current');
+      });
+    }
+    const queue = () => { if (!raf) raf = requestAnimationFrame(draw); };
+    measure(); draw();
+    addEventListener('scroll', queue, { passive: true });
+    addEventListener('resize', () => { measure(); queue(); });
+    document.fonts?.ready.then(() => { measure(); queue(); });
+  }
+</script>
+
+<style>
+  .readbar {
+    position: sticky; z-index: 19; top: 3.5rem; height: 1.6rem;
+    background: var(--bg); border-bottom: 1px solid var(--line);
+    overflow-x: clip; /* section names never widen the page */
+    padding-inline: var(--gutter); margin-inline: calc(-1 * var(--gutter));
+    --halo: color-mix(in oklch, var(--accent) calc(var(--glow) * 85%), transparent);
+  }
+  .track { position: absolute; inset: 0 var(--gutter); overflow: hidden; white-space: pre; line-height: 1.6rem; color: var(--faint); letter-spacing: 0; text-transform: none; }
+  .track :global(.done) { color: var(--accent); text-shadow: 0 0 0.6em var(--halo); }
+  .marks { position: absolute; inset: 0 var(--gutter); }
+  .marks :global(.mark) {
+    position: absolute; top: 50%; transform: translate(-50%, -50%);
+    background: var(--bg); border: 0; padding: 0 0.15rem; cursor: pointer;
+    color: var(--mute); font-size: 0.95rem; line-height: 1;
+  }
+  .marks :global(.mark.on), .marks :global(.mark:hover) { color: var(--accent); text-shadow: 0 0 0.6em var(--halo); }
+  .marks :global(.mark::after) {
+    content: attr(data-title); position: absolute; top: 140%; left: 50%; transform: translateX(-50%);
+    white-space: nowrap; font: 450 var(--step--2) var(--mono); letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--fg); background: var(--bg); border: 1px solid var(--line); padding: 0.25rem 0.45rem;
+    opacity: 0; pointer-events: none; transition: opacity 0.15s;
+  }
+  .marks :global(.mark:hover::after), .marks :global(.mark:focus-visible::after) { opacity: 1; }
+</style>

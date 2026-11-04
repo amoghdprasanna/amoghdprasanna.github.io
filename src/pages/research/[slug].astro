@@ -2,7 +2,8 @@
 import { getCollection, render } from 'astro:content';
 import 'katex/dist/katex.min.css';
 import Base from '../../layouts/Base.astro';
-import Ink from '../../components/Ink.astro';
+import EqCard from '../../components/EqCard.astro';
+import ReadingBar from '../../components/ReadingBar.astro';
 
 export async function getStaticPaths() {
   const all = (await getCollection('research', (e) => !e.data.draft)).sort((a, b) => a.data.order - b.data.order);
@@ -16,6 +17,7 @@ const { Content } = await render(entry);
 
 <Base title={d.question.replace(/[?.]$/, '')} description={d.summary}>
   <article class="project wrap">
+    <ReadingBar />
     <p class="crumb mono"><a href="/#research">← Research</a></p>
     <header>
       <p class="mono">{d.year} · {d.place} · <span class="chip">{d.status}</span></p>
@@ -27,7 +29,7 @@ const { Content } = await render(entry);
         {d.tags.length > 0 && <div><dt>Tools</dt><dd>{d.tags.join(', ')}</dd></div>}
         {d.links.length > 0 && <div><dt>Links</dt><dd>{d.links.map((x, i) => <>{i > 0 && ', '}<a href={x.url}>{x.label}</a></>)}</dd></div>}
       </dl>
-      {d.ink && <Ink name={d.ink} class="head-ink" label={d.inkAlt ?? `Handwritten, ${d.inkLabel ?? 'from my notes'}`} scale={0.105} />}
+      {d.ink && <EqCard name={d.ink} class="head-ink" label={d.inkAlt ?? `Handwritten, ${d.inkLabel ?? 'from my notes'}`} scale={0.105} />}
     </header>
     <div class="prose body">
       <Content />

@@ -60,6 +60,8 @@
 * { margin: 0; }
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-top: 4.5rem; }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+/* Research pages also have the reading bar under the header. */
+html:has(.readbar:not([hidden])) { scroll-padding-top: 6.5rem; }
 
 body {
   background-color: var(--bg);
